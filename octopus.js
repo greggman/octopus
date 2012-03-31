@@ -7,7 +7,7 @@ var g_clock = 0;
 var g_scrollX = 0;
 var g_scrollY = 0;
 
-var CAMERA_CHASE_SPEED = 0.98;
+var CAMERA_CHASE_SPEED = 0.2;
 
 function resizeCanvas() {
   if (g_canvas.width != g_canvas.clientWidth ||
