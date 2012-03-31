@@ -7,7 +7,7 @@ InputSystem = (function(){
   var S  = 4;
   var SW = 5;
   var W  = 6;
-  var NE = 7;
+  var NW = 7;
 
   var eventQueue = [];
   var MAX_EVENT_TIME = 0.2;
