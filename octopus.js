@@ -3,6 +3,9 @@ window.onload = main;
 var g_canvas;
 var g_ctx;
 var g_clock = 0;
+// World scroll position.
+var g_scrollX = 0;
+var g_scrollY = 0;
 
 function resizeCanvas() {
   if (g_canvas.width != g_canvas.clientWidth ||
@@ -27,6 +30,10 @@ images = {Octopus1:
     urchin01:
     {
         url: "images/urchin01.png"
+    },
+    background:
+    {
+        url: "images/octo-background.png"
     }
 };
 
@@ -65,8 +72,35 @@ function main() {
   
 }
 
+function drawBackground(ctx) {
+  var img = images.background.img;
+  var imageWidth = img.width;
+  var imageHeight = img.height;
+  var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth + 1;
+  var tilesDown = (g_canvas.height + imageHeight - 1) / imageHeight + 1;
+  var sx = Math.floor(g_scrollX);
+  var sy = Math.floor(g_scrollY);
+  if (sx < 0) {
+    sx = sx - (Math.floor(sx / imageWidth) + 1) * imageWidth;
+  }
+  if (sy < 0) {
+    sy = sy - (Math.floor(sy / imageHeight) + 1) * imageHeight;
+  }
+  ctx.save();
+  ctx.translate(-sx, -sy);
+  for (var yy = 0; yy < tilesDown; ++yy) {
+    for (var xx = 0; xx < tilesAcross; ++xx) {
+      ctx.drawImage(img, xx * imageWidth, yy * imageHeight);
+    }
+  }
+  ctx.restore();
+}
+
 function update(elapsedTime) {
   g_ctx.clearRect(0, 0, g_canvas.width, g_canvas.height);
+  g_scrollX += elapsedTime * 20;
+  g_scrollY += elapsedTime * 20;
+  drawBackground(g_ctx);
 
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
@@ -87,25 +121,6 @@ function update(elapsedTime) {
   drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
   g_ctx.restore();
-
-  resetPseudoRandom();
-  var img = images.urchin01.img;
-  for (var ii = 0; ii < 50; ++ii) {
-    var x = 0;
-    var y = 0;
-    if (pseudoRandInt(2)) {
-      x = pseudoRandInt(2) * g_canvas.width;
-      y = pseudoRandInt(g_canvas.height);
-    } else {
-      x = pseudoRandInt(g_canvas.width);
-      y = pseudoRandInt(2) * g_canvas.height;
-    }
-    g_ctx.save();
-    g_ctx.translate(x, y);
-    g_ctx.rotate(pseudoRandom() * Math.PI * 2);
-    g_ctx.drawImage(img, - img.width / 2, - img.height / 2);
-    g_ctx.restore();
-  }
 }
 
 function drawCircle(ctx, x, y, radius, color) {
