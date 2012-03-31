@@ -7,7 +7,7 @@ var g_clock = 0;
 var g_scrollX = 0;
 var g_scrollY = 0;
 
-var CAMERA_CHASE_SPEED = 0.98;
+var CAMERA_CHASE_SPEED = 0.2;
 
 function resizeCanvas() {
   if (g_canvas.width != g_canvas.clientWidth ||
@@ -69,9 +69,12 @@ var LegsInfo = [
 ];
 
 function main() {
+  var requestId;
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas, true);
+  window.addEventListener('blur', pauseGame, true);
+  window.addEventListener('focus', resumeGame, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
 
@@ -81,23 +84,35 @@ function main() {
   var then = getTime();
   function mainLoop() {
     var now = getTime();
-    var elapsedTime = now - then;
+    var elapsedTime = Math.min(0.1, now - then);
     then = now;
     g_clock += elapsedTime;
 
     update(elapsedTime);
 
-    requestAnimFrame(mainLoop, g_canvas);
+    requestId = requestAnimFrame(mainLoop, g_canvas);
   }
-  
+
+  function pauseGame() {
+    if (requestId !== undefined) {
+      cancelRequestAnimFrame(requestId);
+      requestId = undefined;
+    }
+  }
+
+  function resumeGame() {
+    if (requestId === undefined) {
+      mainLoop();
+    }
+  }
 }
 
 function drawBackground(ctx) {
   var img = images.background.img;
   var imageWidth = img.width;
   var imageHeight = img.height;
-  var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth + 1;
-  var tilesDown = (g_canvas.height + imageHeight - 1) / imageHeight + 1;
+  var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth;
+  var tilesDown = (g_canvas.height + imageHeight - 1) / imageHeight;
   var sx = Math.floor(g_scrollX);
   var sy = Math.floor(g_scrollY);
   if (sx < 0) {
@@ -108,8 +123,8 @@ function drawBackground(ctx) {
   }
   ctx.save();
   ctx.translate(-sx, -sy);
-  for (var yy = 0; yy < tilesDown; ++yy) {
-    for (var xx = 0; xx < tilesAcross; ++xx) {
+  for (var yy = -1; yy < tilesDown; ++yy) {
+    for (var xx = -1; xx < tilesAcross; ++xx) {
       ctx.drawImage(img, xx * imageWidth, yy * imageHeight);
     }
   }
@@ -129,8 +144,7 @@ function update(elapsedTime) {
   drawBackground(g_ctx);
 
   g_ctx.save();
-//  g_ctx.translate(octoInfo.x - g_scrollX, octoInfo.y - g_scrollY);
-  g_ctx.translate(octoInfo.x, octoInfo.y);
+  g_ctx.translate(octoInfo.x - g_scrollX, octoInfo.y - g_scrollY);
   g_ctx.rotate(octoInfo.rotation);
   drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
@@ -231,7 +245,7 @@ function drawOctopusBody(image, x, y, rotation, ctx)
 function drawItem(image, x, y, rotation, ctx)
 {
 	ctx.save();
-	ctx.rotate(rotation);
+//	ctx.rotate(rotation);
 	ctx.drawImage(image.img, x, y);
 	ctx.restore();
 }
@@ -258,7 +272,6 @@ function LoadAllImages(images, callback)
 		images[name].img = LoadImage(images[name].url, 
 			function()
 			{
-				console.log("count"+count);
 				count--; 
 				if(count == 0)
 				{
