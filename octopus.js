@@ -5,10 +5,10 @@ var g_ctx;
 var g_clock = 0;
 
 function resizeCanvas() {
-  if (canvas.width != canvas.clientWidth ||
-      canvas.height != canvas.clientHeight) {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+  if (g_canvas.width != g_canvas.clientWidth ||
+      g_canvas.height != g_canvas.clientHeight) {
+    g_canvas.width = g_canvas.clientWidth;
+    g_canvas.height = g_canvas.clientHeight;
   }
 }
 
