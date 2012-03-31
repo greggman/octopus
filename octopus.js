@@ -7,6 +7,8 @@ var g_clock = 0;
 var g_scrollX = 0;
 var g_scrollY = 0;
 
+var CAMERA_CHASE_SPEED = 0.98;
+
 function resizeCanvas() {
   if (g_canvas.width != g_canvas.clientWidth ||
       g_canvas.height != g_canvas.clientHeight) {
@@ -116,14 +118,18 @@ function drawBackground(ctx) {
 
 function update(elapsedTime) {
   g_ctx.clearRect(0, 0, g_canvas.width, g_canvas.height);
-  g_scrollX += elapsedTime * 20;
-  g_scrollY += elapsedTime * 20;
-  drawBackground(g_ctx);
 
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
+  var targetX = octoInfo.x - g_canvas.width / 2;
+  var targetY = octoInfo.y - g_canvas.height / 2;
+  g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
+  g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
+  drawBackground(g_ctx);
+
   g_ctx.save();
+//  g_ctx.translate(octoInfo.x - g_scrollX, octoInfo.y - g_scrollY);
   g_ctx.translate(octoInfo.x, octoInfo.y);
   g_ctx.rotate(octoInfo.rotation);
   drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
