@@ -20,27 +20,27 @@ images =
 {
 	bodyHappy:
 	{
-		url: "images/octopus_body.jpg"
+		url: "images/octopus_body.png"
 	},
 	bodyNormal:
 	{
-		url: "images/octopus_body.jpg"
+		url: "images/octopus_body.png"
 	},
 	bodyDerp:
 	{
-		url: "images/octopus_body.jpg"
+		url: "images/octopus_body.png"
 	},
 	legTip:
 	{
-		url: "images/octopus_leg1.jpg"
+		url: "images/octopus_leg1.png"
 	},
 	legSegment1:
 	{
-		url: "images/octopus_leg2.jpg"
+		url: "images/octopus_leg2.png"
 	},
 	legSegment2:
 	{
-		url: "images/octopus_leg3.jpg"
+		url: "images/octopus_leg3.png"
 	}
 };
 
