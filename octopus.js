@@ -96,8 +96,8 @@ function drawBackground(ctx) {
   var img = images.background.img;
   var imageWidth = img.width;
   var imageHeight = img.height;
-  var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth + 1;
-  var tilesDown = (g_canvas.height + imageHeight - 1) / imageHeight + 1;
+  var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth;
+  var tilesDown = (g_canvas.height + imageHeight - 1) / imageHeight;
   var sx = Math.floor(g_scrollX);
   var sy = Math.floor(g_scrollY);
   if (sx < 0) {
@@ -108,8 +108,8 @@ function drawBackground(ctx) {
   }
   ctx.save();
   ctx.translate(-sx, -sy);
-  for (var yy = 0; yy < tilesDown; ++yy) {
-    for (var xx = 0; xx < tilesAcross; ++xx) {
+  for (var yy = -1; yy < tilesDown; ++yy) {
+    for (var xx = -1; xx < tilesAcross; ++xx) {
       ctx.drawImage(img, xx * imageWidth, yy * imageHeight);
     }
   }
@@ -129,8 +129,7 @@ function update(elapsedTime) {
   drawBackground(g_ctx);
 
   g_ctx.save();
-//  g_ctx.translate(octoInfo.x - g_scrollX, octoInfo.y - g_scrollY);
-  g_ctx.translate(octoInfo.x, octoInfo.y);
+  g_ctx.translate(octoInfo.x - g_scrollX, octoInfo.y - g_scrollY);
   g_ctx.rotate(octoInfo.rotation);
   drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
@@ -202,7 +201,7 @@ function drawOctopusBody(image, x, y, rotation, ctx)
 function drawItem(image, x, y, rotation, ctx)
 {
 	ctx.save();
-	ctx.rotate(rotation);
+//	ctx.rotate(rotation);
 	ctx.drawImage(image.img, x, y);
 	ctx.restore();
 }
