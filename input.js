@@ -72,17 +72,7 @@ InputSystem = (function(){
 
 OctopusControl = (function(){
 
-  var motion = [
-  { x:  0, y: -1 }, // N
-  { x:  1, y: -1 }, // NE
-  { x:  1, y:  0 }, // E
-  { x:  1, y:  1 }, // SE
-  { x:  0, y:  1 }, // S
-  { x: -1, y:  1 }, // SW
-  { x: -1, y:  0 }, // E
-  { x: -1, y: -1 }, // NW
-  ];
-
+  var legsInfo;
   var xVel = 0;
   var yVel = 0;
   var xAccel = 0;
@@ -95,26 +85,16 @@ OctopusControl = (function(){
   };
 
 LEG_FRICTION = 0.9;
-LEG_ACCELERATION = 50;
+LEG_ACCELERATION = 150;
 LEG_UP_DURATION = 1.5;
-  var NUM_LEGS = 8;
-  var legs = [
-  ];
-
-  for (var ii = 0; ii < NUM_LEGS; ++ii) {
-    var leg = {
-      upTime: 0
-    };
-    legs.push(leg);
-  }
 
   function handleDirection(event) {
-    console.log(event.direction);
-    var leg = legs[event.direction];
+    var leg = legsInfo[event.direction];
     if (leg.upTime < g_clock) {
       leg.upTime = g_clock + LEG_UP_DURATION;
-      xAccel += motion[event.direction].x * LEG_ACCELERATION;
-      yAccel += motion[event.direction].y * LEG_ACCELERATION;
+      var rot = octoInfo.rotation + leg.rotation;
+      xAccel -= Math.sin(rot) * LEG_ACCELERATION;
+      yAccel += Math.cos(rot) * LEG_ACCELERATION;
     }
   }
 
@@ -130,8 +110,16 @@ LEG_UP_DURATION = 1.5;
     octoInfo.rotation = rotation;
   }
 
-  var lastInfo;
+  function setLegs(info) {
+    legsInfo = info;
+    for (var ii = 0; ii < legsInfo.length; ++ii) {
+      var legInfo = legsInfo[ii];
+      legInfo.upTime = 0;
+      legInfo.rotation = legInfo.rotationInDeg * Math.PI / 180;
+    }
+  }
 
+  var lastInfo;
   function update(elapsedTime) {
 //    info =
 //    "xa: " + xAccel + " ya:" + yAccel +
@@ -155,6 +143,7 @@ LEG_UP_DURATION = 1.5;
   return {
     getInfo: getInfo,
     setInfo: setInfo,
+    setLegs: setLegs,
     update: update,
 
     dummy: false  // just marks the end.
