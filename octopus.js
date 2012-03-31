@@ -72,7 +72,7 @@ function main() {
   var requestId;
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
-  window.addEventListener('resize', resizeCanvas, true);
+  window.addEventListener('resize', resize, true);
   window.addEventListener('blur', pauseGame, true);
   window.addEventListener('focus', resumeGame, true);
   g_ctx = g_canvas.getContext("2d");
@@ -91,6 +91,11 @@ function main() {
     update(elapsedTime);
 
     requestId = requestAnimFrame(mainLoop, g_canvas);
+  }
+
+  function resize() {
+    resizeCanvas();
+    update(0.0001);
   }
 
   function pauseGame() {
