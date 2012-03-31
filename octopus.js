@@ -44,12 +44,25 @@ images =
 	}
 };
 
+var LegsInfo = [
+{ xOff:  0, yOff: -1, radius: 90, rotAccelInDeg: -20, rotationInDeg: 270 - 15 },
+{ xOff:  1, yOff: -1, radius: 90, rotAccelInDeg: -10, rotationInDeg: 270 + 15 },
+{ xOff:  1, yOff:  0, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 - 15 },
+{ xOff:  1, yOff:  1, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 + 15 },
+{ xOff:  0, yOff:  1, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 - 15 },
+{ xOff: -1, yOff:  1, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 + 15 },
+{ xOff: -1, yOff:  0, radius: 90, rotAccelInDeg:  10, rotationInDeg: 90 - 15 },
+{ xOff: -1, yOff: -1, radius: 90, rotAccelInDeg:  20, rotationInDeg: 90 + 15 },
+];
+
 function main() {
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
+  window.addEventListener('resize', resizeCanvas, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
 
+  OctopusControl.setLegs(LegsInfo);
   OctopusControl.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
 
   var then = getTime();
@@ -72,12 +85,22 @@ function update(elapsedTime) {
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
-  drawCircle(
-    g_ctx,
-    octoInfo.x,
-    octoInfo.y,
-    100,
-    "rgb(200,0,255)");
+  g_ctx.save();
+  g_ctx.translate(octoInfo.x, octoInfo.y);
+  g_ctx.rotate(octoInfo.rotation);
+  drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
+  for (var ii = 0; ii < LegsInfo.length; ++ii) {
+    var legInfo = LegsInfo[ii];
+    g_ctx.save();
+    g_ctx.rotate(legInfo.rotation);
+    g_ctx.translate(0, 100);
+    drawCircle(g_ctx, 0, 0, 15,
+               g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
+    g_ctx.restore();
+  }
+  drawCircle(g_ctx, 0, -80, 10, "rgb(255,255,255)");
+  drawCircle(g_ctx, 0, -82, 5, "rgb(0,0,0)");
+  g_ctx.restore();
 	
 	drawOctopusBody(images.bodyNormal, octoInfo.x, octoInfo.y, octoInfo.rotation, g_ctx);
 }
