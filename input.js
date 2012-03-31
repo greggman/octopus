@@ -75,8 +75,10 @@ OctopusControl = (function(){
   var legsInfo;
   var xVel = 0;
   var yVel = 0;
+  var rVel = 0;
   var xAccel = 0;
   var yAccel = 0;
+  var rAccel = 0;
 
   var octoInfo = {
     x: 0,
@@ -85,8 +87,9 @@ OctopusControl = (function(){
   };
 
 LEG_FRICTION = 0.9;
+LEG_ROT_FRICTION = 0.9;
 LEG_ACCELERATION = 150;
-LEG_UP_DURATION = 1.5;
+LEG_UP_DURATION = 0.8;
 
   function handleDirection(event) {
     var leg = legsInfo[event.direction];
@@ -95,6 +98,7 @@ LEG_UP_DURATION = 1.5;
       var rot = octoInfo.rotation + leg.rotation;
       xAccel -= Math.sin(rot) * LEG_ACCELERATION;
       yAccel += Math.cos(rot) * LEG_ACCELERATION;
+      rAccel += leg.rotAccel;
     }
   }
 
@@ -116,6 +120,7 @@ LEG_UP_DURATION = 1.5;
       var legInfo = legsInfo[ii];
       legInfo.upTime = 0;
       legInfo.rotation = legInfo.rotationInDeg * Math.PI / 180;
+      legInfo.rotAccel = legInfo.rotAccelInDeg * Math.PI / 180;
     }
   }
 
@@ -132,12 +137,16 @@ LEG_UP_DURATION = 1.5;
 
     xVel += xAccel;
     yVel += yAccel;
+    rVel += rAccel;
     octoInfo.x += xVel * elapsedTime;
     octoInfo.y += yVel * elapsedTime;
+    octoInfo.rotation += rVel * elapsedTime;
     xVel *= LEG_FRICTION;
     yVel *= LEG_FRICTION;
+    rVel *= LEG_ROT_FRICTION;
     xAccel = 0;
     yAccel = 0;
+    rAccel = 0;
   }
 
   return {

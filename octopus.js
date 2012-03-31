@@ -27,14 +27,14 @@ images = {Octopus1:
 };
 
 var LegsInfo = [
-{ xOff:  0, yOff: -1, radius: 90, rotationInDeg: 270 - 15 },
-{ xOff:  1, yOff: -1, radius: 90, rotationInDeg: 270 + 15 },
-{ xOff:  1, yOff:  0, radius: 90, rotationInDeg: 0 - 30 - 15 },
-{ xOff:  1, yOff:  1, radius: 90, rotationInDeg: 0 - 30 + 15 },
-{ xOff:  0, yOff:  1, radius: 90, rotationInDeg: 0 + 30 - 15 },
-{ xOff: -1, yOff:  1, radius: 90, rotationInDeg: 0 + 30 + 15 },
-{ xOff: -1, yOff:  0, radius: 90, rotationInDeg: 90 - 15 },
-{ xOff: -1, yOff: -1, radius: 90, rotationInDeg: 90 + 15 },
+{ xOff:  0, yOff: -1, radius: 90, rotAccelInDeg: -20, rotationInDeg: 270 - 15 },
+{ xOff:  1, yOff: -1, radius: 90, rotAccelInDeg: -10, rotationInDeg: 270 + 15 },
+{ xOff:  1, yOff:  0, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 - 15 },
+{ xOff:  1, yOff:  1, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 + 15 },
+{ xOff:  0, yOff:  1, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 - 15 },
+{ xOff: -1, yOff:  1, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 + 15 },
+{ xOff: -1, yOff:  0, radius: 90, rotAccelInDeg:  10, rotationInDeg: 90 - 15 },
+{ xOff: -1, yOff: -1, radius: 90, rotAccelInDeg:  20, rotationInDeg: 90 + 15 },
 ];
 
 function main() {
