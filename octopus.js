@@ -134,12 +134,13 @@ function update(elapsedTime) {
   g_ctx.rotate(octoInfo.rotation);
   drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
+  drawLegs(15, g_ctx);
   for (var ii = 0; ii < LegsInfo.length; ++ii) {
     var legInfo = LegsInfo[ii];
     g_ctx.save();
     g_ctx.rotate(legInfo.rotation);
-    g_ctx.translate(0, 100);
-	drawLeg(0, 0, 15, g_ctx);
+	g_ctx.translate(0, 100);
+	// drawLeg(0, 0, 15, g_ctx);
     drawCircle(g_ctx, 0, 0, 15,
                g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
     g_ctx.restore();
@@ -162,6 +163,34 @@ function LoadImage(url, callback)
 	image.onload = callback;
 	image.src = url;
 	return image;
+}
+
+function drawLegs(rotation, ctx)
+{
+	for(var i = 0; i < 8; i++)
+	{
+		ctx.save();
+		//left legs
+		if(i < 2)
+		{
+			ctx.rotate(90 * Math.PI / 180);
+			ctx.translate(-20 * i, 75);
+		}
+		//bottom legs
+		else if(i < 6)
+		{
+			ctx.rotate(360 * Math.PI / 180);
+			ctx.translate(20 * i, 50);
+		}
+		//right legs
+		else
+		{
+			ctx.rotate(270 * Math.PI / 180);
+			ctx.translate(20 * i, 75);
+		}
+		drawLeg(0, 0, rotation, ctx);
+		ctx.restore();
+	}
 }
 
 function drawLeg(baseX, baseY, rotation, ctx)
