@@ -243,7 +243,6 @@ function LoadAllImages(images, callback)
 		images[name].img = LoadImage(images[name].url, 
 			function()
 			{
-				console.log("count"+count);
 				count--; 
 				if(count == 0)
 				{
