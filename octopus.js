@@ -19,14 +19,8 @@ function getTime() {
   return (new Date()).getTime() * 0.001;
 }
 
-images = {Octopus1:
-	{
-		url: "images/octopus1.jpg",
-	},
-	Octopus2:
-	{
-		url: "images/octopus2.jpg"
-	},
+images = 
+{
     urchin01:
     {
         url: "images/urchin01.png"
@@ -34,7 +28,31 @@ images = {Octopus1:
     background:
     {
         url: "images/octo-background.png"
-    }
+    },
+	bodyHappy:
+	{
+		url: "images/octopus_body.png"
+	},
+	bodyNormal:
+	{
+		url: "images/octopus_body.png"
+	},
+	bodyDerp:
+	{
+		url: "images/octopus_body.png"
+	},
+	legTip:
+	{
+		url: "images/octopus_leg1.png"
+	},
+	legSegment1:
+	{
+		url: "images/octopus_leg2.png"
+	},
+	legSegment2:
+	{
+      url: "images/octopus_leg3.png"
+	}
 };
 
 var LegsInfo = [
@@ -121,6 +139,8 @@ function update(elapsedTime) {
   drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
   g_ctx.restore();
+	
+	drawOctopusBody(images.bodyNormal, octoInfo.x, octoInfo.y, octoInfo.rotation, g_ctx);
 }
 
 function drawCircle(ctx, x, y, radius, color) {
@@ -136,6 +156,52 @@ function LoadImage(url, callback)
 	image.onload = callback;
 	image.src = url;
 	return image;
+}
+
+function drawLeg(baseX, baseY, rotation, ctx)
+{
+	//draw tip
+	ctx.save();
+	ctx.drawImage(images.legTip.img, tipX, tipY);
+	base.x = baseX + images.legTip.img.width;
+	base.y = baseY + images.legTip.img.height;
+	ctx.save();
+	ctx.rotate(rotation * .3);
+	ctx.drawImage(images.legSegment1.img, base.x, base.y);
+	ctx.save();
+	ctx.rotate(rotation * .6);
+	ctx.drawImage(images.legSegment2.img, base.x, base.y);
+	ctx.restore();
+	ctx.restore();
+	ctx.restore();
+}
+
+function drawOctopusBody(image, x, y, rotation, ctx)
+{
+	x = x - (image.img.width * .5);
+	y = y - (image.img.height * .5);
+	drawItem(image, x, y, rotation, ctx);
+}
+
+function drawItem(image, x, y, rotation, ctx)
+{
+	ctx.save();
+	ctx.rotate(rotation);
+	ctx.drawImage(image.img, x, y);
+	ctx.restore();
+}
+
+function MoveTentacle(tipPosX, tipPosY)
+{
+	var motionForce = -2;//magnitude
+	//assumes first segment is the tip of the tentacle
+	//move the tip
+	var newPos = 
+	{
+		x: tipPosX - motionForce,
+		y: tipPosY - motionForce
+	};
+	return newPos;
 }
 
 function LoadAllImages(images, callback)
