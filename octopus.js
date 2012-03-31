@@ -23,7 +23,11 @@ images = {Octopus1:
 	Octopus2:
 	{
 		url: "images/octopus2.jpg"
-	}
+	},
+    urchin01:
+    {
+        url: "images/urchin01.png"
+    }
 };
 
 var LegsInfo = [
@@ -61,7 +65,6 @@ function main() {
   
 }
 
-
 function update(elapsedTime) {
   g_ctx.clearRect(0, 0, g_canvas.width, g_canvas.height);
 
@@ -81,11 +84,28 @@ function update(elapsedTime) {
                g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
     g_ctx.restore();
   }
-  drawCircle(g_ctx, 0, -80, 10, "rgb(255,255,255)");
-  drawCircle(g_ctx, 0, -82, 5, "rgb(0,0,0)");
+  drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
+  drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
   g_ctx.restore();
-	
-	g_ctx.drawImage(images.Octopus1.img, 0,0);
+
+  resetPseudoRandom();
+  var img = images.urchin01.img;
+  for (var ii = 0; ii < 50; ++ii) {
+    var x = 0;
+    var y = 0;
+    if (pseudoRandInt(2)) {
+      x = pseudoRandInt(2) * g_canvas.width;
+      y = pseudoRandInt(g_canvas.height);
+    } else {
+      x = pseudoRandInt(g_canvas.width);
+      y = pseudoRandInt(2) * g_canvas.height;
+    }
+    g_ctx.save();
+    g_ctx.translate(x, y);
+    g_ctx.rotate(pseudoRandom() * Math.PI * 2);
+    g_ctx.drawImage(img, - img.width / 2, - img.height / 2);
+    g_ctx.restore();
+  }
 }
 
 function drawCircle(ctx, x, y, radius, color) {
