@@ -6,6 +6,7 @@ var g_clock = 0;
 // World scroll position.
 var g_scrollX = 0;
 var g_scrollY = 0;
+var g_obsticles = [];
 
 var CAMERA_CHASE_SPEED = 0.2;
 
@@ -21,6 +22,15 @@ function getTime() {
   return (new Date()).getTime() * 0.001;
 }
 
+function MakeObsticle(type, x, y) {
+  var obj = {
+    x: x,
+    y: y,
+    type: type
+  };
+};
+
+
 images = 
 {
     urchin01:
@@ -29,7 +39,7 @@ images =
     },
     background:
     {
-        url: "images/octo-background.png"
+        url: "images/BG_tile.png"
     },
 	bodyHappy:
 	{
