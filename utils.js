@@ -10,6 +10,19 @@ window.requestAnimFrame = (function(){
           };
 })();
 
+/**
+ * Provides cancelRequestAnimationFrame in a cross browser way.
+ */
+window.cancelRequestAnimFrame = (function() {
+  return window.cancelCancelRequestAnimationFrame ||
+         window.webkitCancelRequestAnimationFrame ||
+         window.mozCancelRequestAnimationFrame ||
+         window.oCancelRequestAnimationFrame ||
+         window.msCancelRequestAnimationFrame ||
+         window.clearTimeout;
+})();
+
+
 (function(){
   /**
    * A random seed for the pseudoRandom function.

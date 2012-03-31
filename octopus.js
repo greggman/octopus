@@ -69,9 +69,12 @@ var LegsInfo = [
 ];
 
 function main() {
+  var requestId;
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas, true);
+  window.addEventListener('blur', pauseGame, true);
+  window.addEventListener('focus', resumeGame, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
 
@@ -81,15 +84,27 @@ function main() {
   var then = getTime();
   function mainLoop() {
     var now = getTime();
-    var elapsedTime = now - then;
+    var elapsedTime = Math.min(0.1, now - then);
     then = now;
     g_clock += elapsedTime;
 
     update(elapsedTime);
 
-    requestAnimFrame(mainLoop, g_canvas);
+    requestId = requestAnimFrame(mainLoop, g_canvas);
   }
-  
+
+  function pauseGame() {
+    if (requestId !== undefined) {
+      cancelRequestAnimFrame(requestId);
+      requestId = undefined;
+    }
+  }
+
+  function resumeGame() {
+    if (requestId === undefined) {
+      mainLoop();
+    }
+  }
 }
 
 function drawBackground(ctx) {
