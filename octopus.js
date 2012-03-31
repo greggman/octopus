@@ -40,6 +40,7 @@ var LegsInfo = [
 function main() {
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
+  window.addEventListener('resize', resizeCanvas, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
 
