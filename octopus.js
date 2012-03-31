@@ -32,15 +32,15 @@ images =
 	},
 	legTip:
 	{
-		url: "images/octopus_leg1.png"
+		url: "images/octopus_leg3.png"
 	},
 	legSegment1:
 	{
-		url: "images/octopus_leg2.png"
+		url: "images/octopus_leg1.png"
 	},
 	legSegment2:
 	{
-		url: "images/octopus_leg3.png"
+		url: "images/octopus_leg2.png"
 	}
 };
 
@@ -89,11 +89,13 @@ function update(elapsedTime) {
   g_ctx.translate(octoInfo.x, octoInfo.y);
   g_ctx.rotate(octoInfo.rotation);
   drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
+  drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
   for (var ii = 0; ii < LegsInfo.length; ++ii) {
     var legInfo = LegsInfo[ii];
     g_ctx.save();
     g_ctx.rotate(legInfo.rotation);
     g_ctx.translate(0, 100);
+	drawLeg(0, 0, 15, g_ctx);
     drawCircle(g_ctx, 0, 0, 15,
                g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
     g_ctx.restore();
@@ -101,8 +103,6 @@ function update(elapsedTime) {
   drawCircle(g_ctx, 0, -80, 10, "rgb(255,255,255)");
   drawCircle(g_ctx, 0, -82, 5, "rgb(0,0,0)");
   g_ctx.restore();
-	
-	drawOctopusBody(images.bodyNormal, octoInfo.x, octoInfo.y, octoInfo.rotation, g_ctx);
 }
 
 function drawCircle(ctx, x, y, radius, color) {
@@ -122,17 +122,27 @@ function LoadImage(url, callback)
 
 function drawLeg(baseX, baseY, rotation, ctx)
 {
-	//draw tip
+	//define base variable position for each leg
+	var base = 
+	{
+		x: baseX,
+		y: baseY
+	};
+	//draw section
+	// ctx.rotate(rotation * .3);
 	ctx.save();
-	ctx.drawImage(images.legTip.img, tipX, tipY);
-	base.x = baseX + images.legTip.img.width;
-	base.y = baseY + images.legTip.img.height;
-	ctx.save();
-	ctx.rotate(rotation * .3);
 	ctx.drawImage(images.legSegment1.img, base.x, base.y);
+	base.y = base.y + images.legTip.img.height;
 	ctx.save();
-	ctx.rotate(rotation * .6);
+	//draw another section
+	// ctx.rotate(rotation * .6);
 	ctx.drawImage(images.legSegment2.img, base.x, base.y);
+	base.y = base.y + images.legTip.img.height;
+	//draw tip
+	// ctx.rotate(rotation * .3);
+	ctx.save();
+	ctx.drawImage(images.legTip.img, base.x, base.y);
+	base.y = base.y + images.legTip.img.height;
 	ctx.restore();
 	ctx.restore();
 	ctx.restore();
