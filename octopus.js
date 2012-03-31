@@ -27,11 +27,12 @@ images = {Octopus1:
 };
 
 function main() {
-	
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
+
+  OctopusControl.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
 
   var then = getTime();
   function mainLoop() {
@@ -47,12 +48,17 @@ function main() {
   
 }
 
+
 function update(elapsedTime) {
   g_ctx.clearRect(0, 0, g_canvas.width, g_canvas.height);
+
+  OctopusControl.update(elapsedTime);
+  var octoInfo = OctopusControl.getInfo();
+
   drawCircle(
     g_ctx,
-    g_canvas.width / 2 + Math.sin(g_clock) * 100,
-    g_canvas.height / 2 + Math.cos(g_clock) * 100,
+    octoInfo.x,
+    octoInfo.y,
     100,
     "rgb(200,0,255)");
 	
