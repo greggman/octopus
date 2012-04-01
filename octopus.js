@@ -234,6 +234,9 @@ function MakeCollectible(x, y, radius)
 	{
 		x: x,
 		y: y,
+	    type: {
+		  radius: radius
+		},
 		radius: radius,
 		isCollected: false
 	};

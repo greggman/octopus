@@ -3,14 +3,24 @@ window.onload = main;
 var g_socket;
 var g_statusElem;
 
+function debug(msg) {
+  log(msg);
+  var d = document.getElementById("debug");
+  var div = document.createElement("div");
+  div.appendChild(document.createTextNode(msg));
+  d.appendChild(div);
+}
+
 function main() {
+  debug("start");
   connect();
-  window.addEventListener('mousedown', press);
-  window.addEventListener('touchdown', press);
-  window.addEventListener('keypress', press);
+  window.addEventListener('mousedown', press, false);
+  window.addEventListener('touchstart', press, false);
+  window.addEventListener('keypress', press, false);
 }
 
 function press() {
+  debug("press");
   sendCmd("update", {
     cmd: 'press',
     buttonId: 0,
@@ -27,7 +37,7 @@ function connect() {
   $("online").style.display = "block";
   g_statusElem = $("onlinestatus");
   var url = "http://" + window.location.host;
-  log("connecting to: " + url);
+  debug("connecting to: " + url);
   g_socket = io.connect(url);
   g_socket.on('connect', connected);
   g_socket.on('message', function(obj) {
@@ -54,7 +64,7 @@ function sendCmd(cmd, data) {
 }
 
 function processMessage(msg) {
-  log(msg);
+  debug(msg);
   switch (msg.cmd) {
   case 'update':
     switch (msg.data.cmd) {

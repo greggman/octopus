@@ -1,18 +1,28 @@
 InputSystem = (function(){
+  // Direction Events
+  var N  = 0;
+  var NE = 1;
+  var E  = 2;
+  var SE = 3;
+  var S  = 4;
+  var SW = 5;
+  var W  = 6;
+  var NW = 7;
+
   var eventQueue = [];
   var MAX_EVENT_TIME = 0.2;
   var listeners = {};
 
   window.addEventListener('keypress', function(event) {
     switch (event.keyCode) {
-    case  54: addEvent(0); break;  // '6'
-    case  51: addEvent(1); break;  // '3'
-    case  56: addEvent(2); break;  // '8'
-    case  97: addEvent(3); break;  // 'a'
-    case  92: addEvent(4); break;  // '\'
-    case 120: addEvent(5); break;  // 'x'
-    case  46: addEvent(6); break;  // '.'
-    case  98: addEvent(7); break;  // 'b'
+    case  54: addEvent(N);  break;  // '6'
+    case  51: addEvent(NW); break;  // '3'
+    case  56: addEvent(NE); break;  // '8'
+    case  97: addEvent(W);  break;  // 'a'
+    case  92: addEvent(E);  break;  // '\'
+    case 120: addEvent(SW); break;  // 'x'
+    case  46: addEvent(SE); break;  // '.'
+    case  98: addEvent(S);  break;  // 'b'
     }
   }, false);
 
