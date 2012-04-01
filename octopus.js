@@ -186,6 +186,8 @@ function drawObstacles(ctx) {
   ctx.restore();
 }
 
+legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
+
 function update(elapsedTime) {
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
@@ -203,10 +205,20 @@ function update(elapsedTime) {
   g_ctx.translate(octoInfo.x - g_scrollIntX, octoInfo.y - g_scrollIntY);
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
-  var legScrunches = [0, 3, 5, 7, 10, 12, 13, 15];
-  drawLegs(15, legScrunches, g_ctx);
+  drawLegs(legMovement, g_ctx);
   drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
-  // for (var ii = 0; ii < LegsInfo.length; ++ii) {
+  for (var ii = 0; ii < LegsInfo.length; ++ii) {
+	var legInfo = LegsInfo[ii];
+	//start leg animation
+	if(legInfo.upTime > g_clock)
+	{
+		legMovement[ii] = 11;
+	}
+	//decrement leg animation
+	if(legMovement[ii] > 0)
+	{
+		legMovement[ii]--;
+	}
     // var legInfo = LegsInfo[ii];
     // g_ctx.save();
     // g_ctx.rotate(legInfo.rotation);
@@ -215,7 +227,7 @@ function update(elapsedTime) {
     // drawCircle(g_ctx, 0, 0, 15,
                // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
     // g_ctx.restore();
-  // }
+  }
   // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
   g_ctx.restore();
@@ -236,7 +248,7 @@ function LoadImage(url, callback)
 	return image;
 }
 
-function drawLegs(rotation, scrunches, ctx)
+function drawLegs(scrunches, ctx)
 {
 	for(var i = 0; i < 8; i++)
 	{
@@ -259,48 +271,32 @@ function drawLegs(rotation, scrunches, ctx)
 			ctx.rotate(270 * Math.PI / 180);
 			ctx.translate(175 - (30 * i), 75);
 		}
-		drawLeg(0, 0, rotation, scrunches[i], ctx);
+		drawLeg(0, 0, scrunches[i], ctx);
 		ctx.restore();
 	}
 }
 
-function drawLeg(baseX, baseY, rotation, scrunch, ctx)
+function drawLeg(baseX, baseY, scrunch, ctx)
 {
 	//define base variable position for each leg
 	var base = 
 	{
-		x: baseX,
-		y: baseY
+		x: baseX - scrunch,
+		y: baseY - scrunch
 	};
 	var combineJoints = 5;
-	//draw section
-	// ctx.rotate(rotation * .3);
 	ctx.save();
-	ctx.drawImage(images.legSegment1.img, base.x, base.y);
-	base.y = base.y + images.legSegment1.img.height - combineJoints - scrunch;
-	base.x = base.x - scrunch;
-	ctx.save();
-	//draw another section
-	scrunchRotation = DotProduct(Normalize(baseX - images.legSegment2.img.width, baseY - images.legSegment2.img.height), 
-		Normalize(base.x - baseX, base.y - baseY));
-	ctx.rotate(scrunchRotation);
-	ctx.drawImage(images.legSegment2.img, base.x - scrunch, base.y);
-	base.y = base.y + images.legSegment2.img.height - combineJoints - scrunch;
-	base.x = base.x - scrunch;
-	//draw tip
-	// ctx.rotate(rotation * .3);
-	ctx.save();
-	ctx.drawImage(images.legTip.img, base.x - scrunch, base.y);
-	base.y = base.y + images.legTip.img.height - combineJoints - scrunch;
+	ctx.rotate((scrunch * 5) * Math.PI / 180);
+	ctx.translate(baseX, baseY);
+    ctx.drawImage(images.legSegment1.img, 0, 0);
+	ctx.translate(0, images.legSegment1.img.height - scrunch - combineJoints);
+	ctx.rotate((scrunch * 10) * Math.PI / 180);
+    ctx.drawImage(images.legSegment2.img, 0, 0);
+	ctx.translate(0, images.legSegment2.img.height - scrunch - combineJoints);
+	ctx.rotate((scrunch * -10) * Math.PI / 180);
+    ctx.drawImage(images.legTip.img, 0, 0);
 	ctx.restore();
-	ctx.restore();
-	ctx.restore();
-	
-	//debug
-	// console.log(180 * (scrunchRotation / Math.PI));
-	// g_ctx.font = "12pt san-serif";
-	// g_ctx.fillStyle = "white";
-	// g_ctx.fillText(""+scrunchRotation, 10, 20);
+    return;
 }
 
 function Normalize(dx, dy)
