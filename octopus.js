@@ -21,6 +21,12 @@ var INK_LEAK_DURATION = 1;
 var INK_COUNT = 10;
 var INK_SCALE = 1;
 
+function log(msg) {
+  if (window.console && window.console.log) {
+    window.console.log(msg);
+  }
+}
+
 function resizeCanvas() {
   if (g_canvas.height != g_canvas.clientHeight) {
     g_canvas.width = LEVEL_WIDTH;
@@ -91,6 +97,17 @@ Obstacles = [
   {name:"urchin02", radius: 150}
 ];
 
+Sounds = {
+  ouch: {
+    filename: "sounds/leg.mp3",
+    samples: 3,
+  },
+  leg: {
+    filename: "sounds/leg.mp3",
+    samples: 16,
+  }
+};
+
 function main() {
   var requestId;
   g_canvas = document.getElementById("canvas");
@@ -100,6 +117,8 @@ function main() {
   window.addEventListener('focus', resumeGame, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
+
+  audio.init(Sounds);
 
   OctopusControl.setLegs(LegsInfo);
   OctopusControl.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
@@ -175,6 +194,7 @@ function CheckCollisions() {
       g_inCollision = true;
       OctopusControl.shootBack(obj);
       InkSystem.startInk(dx / 2, dy / 2);
+      audio.play_sound('ouch');
       break;
     }
   }

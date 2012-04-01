@@ -1,5 +1,3 @@
-tdl.provide('audio');
-
 // To play a sound, simply call audio.play_sound(id), where id is
 // one of the keys of the g_sound_files array, e.g. "damage".
 audio = (function() {
@@ -18,14 +16,14 @@ audio = (function() {
       that.buffer = g_context.createBuffer(req.response, true);
     }
     req.addEventListener("error", function(e) {
-      tdl.log("failed to load:", filename, " : ", e.target.status);
+      log("failed to load:", filename, " : ", e.target.status);
     }, false);
     req.send();
   }
 
   WebAudioSound.prototype.play = function() {
     if (!this.buffer) {
-      tdl.log(this.name, " not loaded");
+      log(this.name, " not loaded");
       return;
     }
     var src = g_context.createBufferSource();
@@ -55,12 +53,12 @@ audio = (function() {
 
   AudioTagSound.prototype.play = function() {
     if (this.waiting_on_load > 0) {
-      tdl.log(this.name, " not loaded");
+      log(this.name, " not loaded");
       return;
     }
     this.play_idx = (this.play_idx + 1) % this.samples;
     var a = this.audio[this.play_idx];
-    // tdl.log(this.name, ":", this.play_idx, ":", a.src);
+    // log(this.name, ":", this.play_idx, ":", a.src);
     var b = new Audio();
     b.src = a.src;
     b.addEventListener("canplaythrough", function() {
@@ -71,17 +69,17 @@ audio = (function() {
 
     function handleError(filename, audio) {
         return function(e) {
-          tdl.log("can't load ", filename);
+          log("can't load ", filename);
           /*
           if (filename.substr(filename.length - 4) == ".ogg") {
             filename = filename.substr(0, filename.length - 4) + ".mp3";
-            tdl.log("trying ", filename);
+            log("trying ", filename);
             audio.src = filename;
             audio.onerror = handleError(filename, audio);
             audio.load();
           } else if (filename.substr(filename.length - 4) == ".mp3") {
             filename = filename.substr(0, filename.length - 4) + ".wav";
-            tdl.log("trying ", filename);
+            log("trying ", filename);
             audio.src = filename;
             audio.onerror = handleError(filename, audio);
             audio.load();
@@ -98,11 +96,11 @@ audio = (function() {
 
     var create;
     if (window.webkitAudioContext) {
-      tdl.log("Using Web Audio API");
+      log("Using Web Audio API");
       g_context = new webkitAudioContext();
       create = WebAudioSound;
     } else {
-      tdl.log("Using Audio Tag");
+      log("Using Audio Tag");
       create = AudioTagSound;
     }
 
