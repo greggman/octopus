@@ -161,8 +161,23 @@ SHOOT_BACK_VELOCITY = -500;
   }
 
   function shootBack(other) {
-    xAccel = -lastXAccel;
-    yAccel = SHOOT_BACK_VELOCITY;
+    if (OPTIONS.battle) {
+      var dx = other.x - octoInfo.x;
+      var dy = other.y - octoInfo.y;
+      var l = Math.sqrt(dx * dx + dy * dy);
+      if (l > 0.00001) {
+        dx /= l;
+        dy /= l;
+      } else {
+        dx = 0;
+        dy = 0;
+      }
+      xAccel = SHOOT_BACK_VELOCITY * dx;
+      yAccel = SHOOT_BACK_VELOCITY * dy;
+    } else {
+      xAccel = -lastXAccel;
+      yAccel = SHOOT_BACK_VELOCITY;
+    }
   }
 
   return {
