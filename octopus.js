@@ -30,14 +30,15 @@ var OPTIONS = {
   INK_DURATION: 1,
   INK_LEAK_DURATION: 1.5,
   INK_COUNT: 10,
-  INK_SCALE: 0.5,
+  INK_SCALE: 0.3,
   LEG_COMBINE_JOINTS: 11,
   LEG_FRICTION: 0.98,
   LEG_ROT_FRICTION: 0.98,
   LEG_ACCELERATION: 60,
   LEG_UP_DURATION: 0.8,
   SHOOT_BACK_VELOCITY: -500,
-  URCHIN_SCALE: 1,
+  URCHIN_SCALE1: .4,
+  URCHIN_SCALE2: .8,
 };
 
 getURLOptions(OPTIONS);
@@ -166,8 +167,8 @@ var LegsInfo = [
 ];
 
 Obstacles = [
-  {name:"urchin01", radius: 150},
-  {name:"urchin02", radius: 150}
+  {name:"urchin01", radius: 150, scale: .4},//150 original
+  {name:"urchin02", radius: 150, scale: .8}//scale should be .4 and .8
 ];
 
 Sounds = {
@@ -279,7 +280,7 @@ function CheckCollisions() {
     //g_ctx.font = "12pt monospace";
     //g_ctx.fillStyle = "white";
     //g_ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
-    var rad = obj.type.radius * OPTIONS.URCHIN_SCALE + OPTIONS.OCTOPUS_RADIUS;
+    var rad = obj.type.radius * obj.type.scale + OPTIONS.OCTOPUS_RADIUS;
     var radSq = rad * rad;
     var distSq = dx * dx + dy * dy;
     //g_ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
@@ -396,7 +397,7 @@ function drawObstacles(ctx) {
     var img = images[obj.type.name].img;
     ctx.save();
     var scale = 0.9 + Math.sin((g_clock + ii) * 4) * 0.05;
-    scale *= OPTIONS.URCHIN_SCALE;
+    scale *= obj.type.scale;//here
     ctx.translate(obj.x, obj.y);
     ctx.scale(scale, scale);
     ctx.save();
