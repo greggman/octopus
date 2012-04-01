@@ -173,13 +173,21 @@ Obstacles = [
 
 Sounds = {
   ouch: {
-    filename: "sounds/leg.mp3",
-    samples: 3,
+    filename: "sounds/hit.wav",
+    samples: 3
   },
   swim: {
     filename: "sounds/swim.mp3",
-    samples: 8,
-  }
+    samples: 8
+  },
+  eat: {
+    filename: "sounds/eat.wav",
+    samples: 6
+  },
+  urchin: {
+    filename: "sounds/urchin.wav",
+    samples: 2
+  },
 };
 
 function main() {
@@ -192,6 +200,12 @@ function main() {
   window.addEventListener('focus', resumeGame, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
+
+  var bgm = $("bgm");
+  bgm.addEventListener('ended', function() {
+	  this.currentTime = 0;
+	  this.play();
+  }, false);
 
   audio.init(Sounds);
 
@@ -289,6 +303,7 @@ function CheckCollisions() {
       OctopusControl.shootBack(obj);
       InkSystem.startInk(dx / 2, dy / 2);
       audio.play_sound('ouch');
+      audio.play_sound('urchin');
 	  health = health - 3;//take damage
 	  //change expression
 	  expression.img = images.bodyOw;
@@ -313,6 +328,7 @@ function CheckCollection()
 		
 		if(distSq < radSq && !obj.isCollected)
 		{
+            audio.play_sound('eat');
 			//collect stuffs!
 			obj.isCollected = true;
 			health++;//get healed a little
@@ -357,6 +373,14 @@ function drawBackground(ctx) {
       ctx.drawImage(img, xx * imageWidth, yy * imageHeight);
     }
   }
+  ctx.restore();
+}
+
+function drawImageCentered(ctx, img, x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.translate(-img.width * 0.5, -img.height * 0.5);
+  ctx.drawImage(img, 0, 0);
   ctx.restore();
 }
 
@@ -531,14 +555,6 @@ function update(elapsedTime) {
 
   g_ctx.save();
   g_ctx.translate(0, octoInfo.y);
-  drawHealthHUD(0,
-	-2 * images.health1.img.height, g_ctx);//hud should follow octo translate but not rotation
-  if(HasLost)
-  {
-	//display ending splash screen
-	g_ctx.drawImage(images.outOfInk.img, .5 * images.outOfInk.img.width, 0);
-	g_ctx.drawImage(images.playAgain.img, 1.5 * images.playAgain.img.width, 100);
-  }
   g_ctx.translate(octoInfo.x, 0);
   g_ctx.rotate(octoInfo.rotation);
   
@@ -613,6 +629,13 @@ function update(elapsedTime) {
 
   InkSystem.drawInks(g_ctx, elapsedTime);
   g_ctx.restore(); // scroll
+  drawHealthHUD(20, 20, g_ctx);//hud should follow octo translate but not rotation
+  if(HasLost)
+  {
+	//display ending splash screen
+	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 2);
+	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 2 + 150);
+  }
   g_ctx.restore(); // for screen scale
 }
 
