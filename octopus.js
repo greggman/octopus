@@ -436,6 +436,15 @@ legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 legBackSwing = [false, false, false, false, false, false, false, false];
 
 function update(elapsedTime) {
+
+	//allow play again if the octopus is dead
+	window.addEventListener('click', function(event) 
+	{
+		if(HasLost)
+		{
+			window.location = window.location;
+		}
+	})
 	//check losing state
 	if(health <= 0)
 	{
@@ -523,6 +532,12 @@ function update(elapsedTime) {
   g_ctx.translate(0, octoInfo.y);
   drawHealthHUD(0,
 	-2 * images.health1.img.height, g_ctx);//hud should follow octo translate but not rotation
+  if(HasLost)
+  {
+	//display ending splash screen
+	g_ctx.drawImage(images.outOfInk.img, .5 * images.outOfInk.img.width, 0);
+	g_ctx.drawImage(images.playAgain.img, 1.5 * images.playAgain.img.width, 100);
+  }
   g_ctx.translate(octoInfo.x, 0);
   g_ctx.rotate(octoInfo.rotation);
   
@@ -538,9 +553,6 @@ function update(elapsedTime) {
 		deathAnimDistance = deathAnimDistance + 4;
 	}
 	expression.timer = 100;
-	//display ending splash screen
-	g_ctx.drawImage(images.outOfInk.img, -.5 * images.outOfInk.img.width, 0);
-	g_ctx.drawImage(images.playAgain.img, -.5 * images.playAgain.img.width, 100);
 	g_ctx.restore();
   }
   else
