@@ -1,5 +1,6 @@
 window.onload = main;
 
+var health = 9;
 var g_canvas;
 var g_ctx;
 var g_clock = 0;
@@ -117,7 +118,28 @@ images =
 	collectible:
 	{
 		url: "images/inkdrop.png"
+	},
+	health0:
+	{
+		url: "images/inkbottle_1.png"
+	},
+	health1:
+	{
+		url: "images/inkbottle_2.png"
+	},
+	health2:
+	{
+		url: "images/inkbottle_3.png"
+	},
+	health3:
+	{
+		url: "images/inkbottle_full .png"
 	}
+};
+var expression = 
+{
+	img: images.bodyNormal,
+	timer: 0
 };
 
 var LegsInfo = [
@@ -212,7 +234,8 @@ function MakeCollectible(x, y, radius)
 	{
 		x: x,
 		y: y,
-		radius: radius
+		radius: radius,
+		isCollected: false
 	};
 	g_collectibles.push(obj);
 }
@@ -227,7 +250,7 @@ function MakeLevel() {
     MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
     y += g_canvas.height * 0.24;
 	//make collectible
-	MakeCollectible(pseudoRandInt(g_canvas.width), y, 150);
+	MakeCollectible(pseudoRandInt(g_canvas.width), y, images.collectible.img.width * .5);
   }
 }
 
@@ -250,6 +273,10 @@ function CheckCollisions() {
       OctopusControl.shootBack(obj);
       InkSystem.startInk(dx / 2, dy / 2);
       audio.play_sound('ouch');
+	  health = health - 3;//take damage
+	  //change expression
+	  expression.img = images.bodyOw;
+	  expression.timer = 35;
       break;
     }
   }
@@ -268,10 +295,19 @@ function CheckCollection()
 		var radSq = rad * rad;
 		var distSq = dx * dx + dy * dy;
 		
-		if(distSq < radSq)
+		if(distSq < radSq && !obj.isCollected)
 		{
 			//collect stuffs!
+			obj.isCollected = true;
+			health++;//get healed a little
+			if(health > 9)
+			{
+				health = 9;
+			}
 			itemsToRemove.push(ii);
+			//change expression
+			expression.img = images.bodyHappy;
+			expression.timer = 35;
 		}
 	}
 	//remove collected items
@@ -308,6 +344,37 @@ function drawBackground(ctx) {
   ctx.restore();
 }
 
+function drawHealthHUD(x, y, ctx)
+{
+	var hpCounter = health;
+	ctx.save();
+	ctx.translate(x, y);
+	for(var ii = 0; ii < 3; ii++)
+	{
+		if(hpCounter >= 3)
+		{
+			ctx.drawImage(images.health3.img, 0, 0);
+			hpCounter = hpCounter - 3;
+		}
+		else if(hpCounter >= 2)
+		{
+			ctx.drawImage(images.health2.img, 0, 0);
+			hpCounter = hpCounter - 2;
+		}
+		else if(hpCounter >= 1)
+		{
+			ctx.drawImage(images.health1.img, 0, 0);
+			hpCounter = hpCounter - 1;
+		}
+		else
+		{
+			ctx.drawImage(images.health0.img, 0, 0);
+		}
+		ctx.translate(-images.health1.img.width, 0);
+	}
+	ctx.restore();
+}
+
 function drawObstacles(ctx) {
   for (var ii = 0; ii < g_obstacles.length; ++ii) {
     var obj = g_obstacles[ii];
@@ -330,18 +397,24 @@ function drawObstacles(ctx) {
 
 function drawCollectibles(ctx)
 {
-	ctx.save();
-	ctx.translate(-g_scrollIntX, -g_scrollIntY);
 	for(var i = 0; i < g_collectibles.length; i++)
 	{
 		var obj = g_collectibles[i];
-		var img = images.collectible.img;
-		ctx.drawImage(
-			img,
-			obj.x - Math.floor(img.width / 2),
-			obj.y - Math.floor(img.height / 2));
+		if(!obj.isCollected)
+		{
+			ctx.save();
+			var img = images.collectible.img;
+			ctx.drawImage(
+				img,
+				obj.x - Math.floor(img.width / 2),
+				obj.y - Math.floor(img.height / 2));
+			if (OPTIONS.debug) {
+				drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
+			}
+			ctx.restore();
+		}
 	}
-	ctx.restore();
+	
 }
 
 legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -422,11 +495,24 @@ function update(elapsedTime) {
   drawCollectibles(g_ctx);
 
   g_ctx.save();
-  g_ctx.translate(octoInfo.x, octoInfo.y);
+  g_ctx.translate(0, octoInfo.y);
+  drawHealthHUD(g_canvas.width - images.health1.img.width,
+	-2 * images.health1.img.height, g_ctx);//hud should follow octo translate but not rotation
+  g_ctx.translate(octoInfo.x, 0);
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawLegs(legMovement, g_ctx);
-  drawOctopusBody(images.bodyNormal, 0, 0, 0, g_ctx);
+  drawOctopusBody(expression.img, 0, 0, 0, g_ctx);
+  //change expression
+  if(expression.timer > 0)
+  {
+	expression.timer--;
+  }
+  else
+  {
+	expression.timer = 0;
+	expression.img = images.bodyNormal;
+  }
   for (var ii = 0; ii < LegsInfo.length; ++ii) {
 	var legInfo = LegsInfo[ii];
 	//start leg animation
