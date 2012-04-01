@@ -26,6 +26,9 @@ canvas {
     top: 0px;
     z-index: 2;
 }
+audio {
+    display: none;
+}
 </style>
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="utils.js"></script>
@@ -40,6 +43,7 @@ canvas {
 </div>
 <div id="online">
 <div id="onlinestatus">disconnected</div>
+<audio src="sounds/octopus.m4a" autoplay loop></audio>
 </div>
 </body>
 </html>

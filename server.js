@@ -18,6 +18,7 @@ var getMimeType = function() {
     '.ogg':  'audio/ogg',
     '.wav':  'audio/wav',
     '.mp3':  'audio/mp3',
+    '.m4a':  'audio/m4a',
     '.js':   'text/javascript',
     '.json': 'application/json',
     '.html': 'text/html'

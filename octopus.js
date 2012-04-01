@@ -172,13 +172,21 @@ Obstacles = [
 
 Sounds = {
   ouch: {
-    filename: "sounds/leg.mp3",
-    samples: 3,
+    filename: "sounds/hit.wav",
+    samples: 3
   },
   swim: {
     filename: "sounds/swim.mp3",
-    samples: 8,
-  }
+    samples: 8
+  },
+  eat: {
+    filename: "sounds/eat.wav",
+    samples: 6
+  },
+  urchin: {
+    filename: "sounds/urchin.wav",
+    samples: 2
+  },
 };
 
 function main() {
@@ -288,6 +296,7 @@ function CheckCollisions() {
       OctopusControl.shootBack(obj);
       InkSystem.startInk(dx / 2, dy / 2);
       audio.play_sound('ouch');
+      audio.play_sound('urchin');
 	  health = health - 3;//take damage
 	  //change expression
 	  expression.img = images.bodyOw;
@@ -312,6 +321,7 @@ function CheckCollection()
 		
 		if(distSq < radSq && !obj.isCollected)
 		{
+            audio.play_sound('eat');
 			//collect stuffs!
 			obj.isCollected = true;
 			health++;//get healed a little
