@@ -9,8 +9,10 @@ var g_scrollY = 0;
 var g_scrollIntX = 0;
 var g_scrollIntY = 0;
 var g_obstacles = [];
+var g_inCollision = false;
 
 var CAMERA_CHASE_SPEED = 0.2;
+var OCTOPUS_RADIUS = 100;
 
 function resizeCanvas() {
   if (g_canvas.width != g_canvas.clientWidth ||
@@ -72,7 +74,7 @@ var LegsInfo = [
 ];
 
 Obstacles = [
-  "urchin01"
+  {name:"urchin01", radius: 100}
 ];
 
 function main() {
@@ -142,7 +144,20 @@ function MakeLevel() {
 }
 
 function CheckCollisions() {
-
+  var octoInfo = OctopusControl.getInfo();
+  var octoRadSq = OCTOPUS_RADIUS * OCTOPUS_RADIUS;
+  for (var ii = 0; ii < g_obstacles; ++ii) {
+    var obj = g_obstacles[ii];
+    var dx = obj.x - octoInfo.x;
+    var dy = obj.y - octoInfo.y;
+    var radSq = obj.type.radius * obj.radius.type;
+    if (dx * dx + dy * dy > radSq + octoRadSq) {
+      g_inCollision = true;
+      OctopusControl.shootBack();
+      break;
+    }
+  }
+  g_inCollision = false;
 }
 
 function drawBackground(ctx) {
@@ -177,11 +192,12 @@ function drawObstacles(ctx) {
   ctx.translate(-g_scrollIntX, -g_scrollIntY);
   for (var ii = 0; ii < g_obstacles.length; ++ii) {
     var obj = g_obstacles[ii];
-    var img = images[obj.type].img;
+    var img = images[obj.type.name].img;
     ctx.drawImage(
         img,
         obj.x - Math.floor(img.width / 2),
         obj.y - Math.floor(img.height / 2));
+    drawCircleLine(ctx, obj.x, obj.y, obj.type.radius, "white");
   }
   ctx.restore();
 }
@@ -224,6 +240,13 @@ function drawCircle(ctx, x, y, radius, color) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2, false);
   ctx.fill();
+}
+
+function drawCircleLine(ctx, x, y, radius, color) {
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+  ctx.stroke();
 }
 
 function LoadImage(url, callback)
