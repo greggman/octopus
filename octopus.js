@@ -200,6 +200,12 @@ function main() {
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
 
+  var bgm = $("bgm");
+  bgm.addEventListener('ended', function() {
+	  this.currentTime = 0;
+	  this.play();
+  }, false);
+
   audio.init(Sounds);
 
   OctopusControl.setLegs(LegsInfo);
