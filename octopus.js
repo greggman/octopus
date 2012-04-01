@@ -27,6 +27,7 @@ var INK_DURATION = 1;
 var INK_LEAK_DURATION = 1.5;
 var INK_COUNT = 10;
 var INK_SCALE = 0.5;
+var LEG_COMBINE_JOINTS = 11;
 
 function log(msg) {
   if (window.console && window.console.log) {
@@ -529,12 +530,12 @@ function drawLegs(scrunches, ctx)
 //			ctx.rotate(90 * Math.PI / 180);
 //			ctx.translate(195 - (30 * i), 75);
 //		}
-		drawLeg(0, 0, scrunches[i] * info.scrunchDir + info.scrunchDir,  ctx);
+		drawLeg(0, 0, scrunches[i] * info.scrunchDir + info.scrunchDir, i, ctx);
 		ctx.restore();
 	}
 }
 
-function drawLeg(baseX, baseY, scrunch, ctx)
+function drawLeg(baseX, baseY, scrunch, legNdx, ctx)
 {
 	//define base variable position for each leg
 	var base = 
@@ -542,10 +543,10 @@ function drawLeg(baseX, baseY, scrunch, ctx)
 		x: baseX - scrunch,
 		y: baseY - scrunch
 	};
-	var combineJoints = 5;
 
     var s = (scrunch > 0 ? 1 : -1)
     //scrunch = LEG_SCRUNCH * s - scrunch;
+    scrunch += Math.sin(g_clock + legNdx);
 
 	ctx.save();
 	ctx.rotate((scrunch * 5) * Math.PI / 180);
@@ -557,7 +558,8 @@ function drawLeg(baseX, baseY, scrunch, ctx)
     ctx.drawImage(img, 0, 0);
     ctx.restore();
 
-	ctx.translate(0, img.height - scrunch - combineJoints);
+	ctx.translate(0, img.height - scrunch - LEG_COMBINE_JOINTS);
+    scrunch += Math.sin(g_clock + legNdx + 1);
 	ctx.rotate((scrunch * 10) * Math.PI / 180);
 
     var img = images.legSegment2.img;
@@ -566,7 +568,8 @@ function drawLeg(baseX, baseY, scrunch, ctx)
     ctx.drawImage(img, 0, 0);
     ctx.restore();
 
-	ctx.translate(0, img.height - scrunch - combineJoints);
+	ctx.translate(0, img.height - scrunch - LEG_COMBINE_JOINTS);
+    scrunch += Math.sin(g_clock + legNdx + 2);
 	ctx.rotate((scrunch * -10) * Math.PI / 180);
 
     var img = images.legTip.img;
