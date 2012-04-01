@@ -12,20 +12,46 @@ var g_heightScale = 1;
 var g_obstacles = [];
 var g_collectibles = [];
 var g_inCollision = false;
+var OPTIONS = { };
 
+var LEG_SCRUNCH = 11;
+var LEG_SCRUNCH_SPEED = 90;
+var LEG_UNSCRUNCH_SPEED = 20;
 var LEVEL_WIDTH = 1024;
 var SIDE_LIMIT = 100;
 var CAMERA_CHASE_SPEED = 0.2;
 var OCTOPUS_RADIUS = 100;
 var INK_DURATION = 1;
-var INK_LEAK_DURATION = 1;
+var INK_LEAK_DURATION = 1.5;
 var INK_COUNT = 10;
-var INK_SCALE = 1;
+var INK_SCALE = 0.5;
 
 function log(msg) {
   if (window.console && window.console.log) {
     window.console.log(msg);
   }
+}
+
+var getURLOptions = function(obj) {
+  var s = window.location.href;
+  var q = s.indexOf("?");
+  var e = s.indexOf("#");
+  if (e < 0) {
+    e = s.length;
+  }
+  var query = s.substring(q + 1, e);
+  var pairs = query.split("&");
+  for (var ii = 0; ii < pairs.length; ++ii) {
+    var keyValue = pairs[ii].split("=");
+    var key = keyValue[0];
+    var value = decodeURIComponent(keyValue[1]);
+    obj[key] = value;
+  }
+};
+
+// return int from 0 to range - 1
+function randInt(range) {
+  return Math.floor(Math.random() * range);
 }
 
 function resizeCanvas() {
@@ -49,8 +75,13 @@ images =
     {
         url: "images/urchin2.png"
     },
-    ink01: {
-        url: "images/inkdrop.png"
+    ink01:
+    {
+        url: "images/ink01.png"
+    },
+    ink02:
+    {
+        url: "images/ink02.png"
     },
     background:
     {
@@ -114,6 +145,9 @@ Sounds = {
 };
 
 function main() {
+  getURLOptions(OPTIONS);
+
+
   var requestId;
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
@@ -165,7 +199,7 @@ function MakeObstacle(type, x, y) {
   var obj = {
     x: x,
     y: y,
-    type: type
+    type: type,
   };
   g_obstacles.push(obj);
 };
@@ -189,7 +223,7 @@ function MakeLevel() {
 	//make obstacle
     var x = xOff + pseudoRandInt(g_canvas.width);
     MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
-    y += g_canvas.height;
+    y += g_canvas.height * 0.24;
 	//make collectible
 	MakeCollectible(pseudoRandInt(g_canvas.width), y, 150);
   }
@@ -276,11 +310,14 @@ function drawObstacles(ctx) {
   for (var ii = 0; ii < g_obstacles.length; ++ii) {
     var obj = g_obstacles[ii];
     var img = images[obj.type.name].img;
-    ctx.drawImage(
-        img,
-        obj.x - Math.floor(img.width / 2),
-        obj.y - Math.floor(img.height / 2));
+    ctx.save();
+    var scale = 0.9 + Math.sin((g_clock + ii) * 4) * 0.05;
+    ctx.translate(obj.x, obj.y);
+    ctx.scale(scale, scale);
+    ctx.translate(-Math.floor(img.width / 2), -Math.floor(img.height / 2));
+    ctx.drawImage(img, 0, 0);
     //drawCircleLine(ctx, obj.x, obj.y, obj.type.radius, "white");
+    ctx.restore();
   }
 }
 
@@ -344,18 +381,18 @@ function update(elapsedTime) {
 	//increment leg animation
 	if(legBackSwing[ii] == true)
 	{
-		legMovement[ii] = legMovement[ii] + 2;
+		legMovement[ii] += LEG_SCRUNCH_SPEED * elapsedTime;
 	}
 	//check to see if leg backswing is done
-	if(legMovement[ii] > 11)
+	if(legMovement[ii] > LEG_SCRUNCH)
 	{
-		legMovement[ii] = 11;
+		legMovement[ii] = LEG_SCRUNCH;
 		legBackSwing[ii] = false;
 	}
 	//decrement leg animation
 	if(legMovement[ii] > 0)
 	{
-		legMovement[ii]--;
+		legMovement[ii] -= LEG_UNSCRUNCH_SPEED * elapsedTime;
 	}
     // var legInfo = LegsInfo[ii];
     // g_ctx.save();
@@ -424,7 +461,7 @@ function drawLegs(scrunches, ctx)
 //			ctx.rotate(90 * Math.PI / 180);
 //			ctx.translate(195 - (30 * i), 75);
 //		}
-		drawLeg(0, 0, scrunches[i] * info.scrunchDir, ctx);
+		drawLeg(0, 0, scrunches[i] * info.scrunchDir + info.scrunchDir,  ctx);
 		ctx.restore();
 	}
 }
@@ -438,6 +475,9 @@ function drawLeg(baseX, baseY, scrunch, ctx)
 		y: baseY - scrunch
 	};
 	var combineJoints = 5;
+
+    var s = (scrunch > 0 ? 1 : -1)
+    //scrunch = LEG_SCRUNCH * s - scrunch;
 
 	ctx.save();
 	ctx.rotate((scrunch * 5) * Math.PI / 180);
@@ -541,12 +581,12 @@ InkSystem = (function(){
     }
 
     var alpha = ctx.globalAlpha;
-    var img = images.ink01.img;
     for (var ii = 0; ii < inks.length; ++ii) {
       var ink = inks[ii];
+      var img = ink.img;
       ink.rot += ink.rotVel * elapsedTime;
       var lerp1to0 = (ink.time - g_clock) / INK_DURATION;
-      var scale = 1 + (1 - lerp1to0) * INK_SCALE;
+      var scale = 0.5 + (1 - lerp1to0) * INK_SCALE;
       ctx.save();
       ctx.translate(ink.x, ink.y);
 	  ctx.rotate(ink.rot);
@@ -559,10 +599,16 @@ InkSystem = (function(){
     canvas.globalAlpha = alpha;
   }
 
+  var inkImages = [
+    "ink01",
+    "ink02"
+  ];
+
   function birthInk(x, y) {
     var ink = {
       x: x,
       y: y,
+      img: images[inkImages[randInt(inkImages.length)]].img,
       rot: Math.random() * Math.PI * 2,
       rotVel: (Math.random() - 0.5) * Math.PI,
       time: g_clock + INK_DURATION
