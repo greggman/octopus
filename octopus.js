@@ -87,14 +87,14 @@ images =
 };
 
 var LegsInfo = [
-{ xOff:  0, yOff: -1, radius: 90, rotAccelInDeg: -20, rotationInDeg: 270 - 15 },
-{ xOff:  1, yOff: -1, radius: 90, rotAccelInDeg: -10, rotationInDeg: 270 + 15 },
-{ xOff:  1, yOff:  0, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 - 15 },
-{ xOff:  1, yOff:  1, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 + 15 },
-{ xOff:  0, yOff:  1, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 - 15 },
-{ xOff: -1, yOff:  1, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 + 15 },
-{ xOff: -1, yOff:  0, radius: 90, rotAccelInDeg:  10, rotationInDeg: 90 - 15 },
-{ xOff: -1, yOff: -1, radius: 90, rotAccelInDeg:  20, rotationInDeg: 90 + 15 },
+{ scrunchDir: -1, xOff:  0, yOff:  80, radius: 90, rotAccelInDeg: -20, rotationInDeg: 270 - 15 },
+{ scrunchDir: -1, xOff:  0, yOff:  80, radius: 90, rotAccelInDeg: -10, rotationInDeg: 270 + 15 },
+{ scrunchDir: -1, xOff:  0, yOff:  55, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 - 15 },
+{ scrunchDir: -1, xOff:  0, yOff:  40, radius: 90, rotAccelInDeg:  -5, rotationInDeg: 0 - 30 + 15 },
+{ scrunchDir:  1, xOff:  0, yOff:  40, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 - 15 },
+{ scrunchDir:  1, xOff:  0, yOff:  55, radius: 90, rotAccelInDeg:   5, rotationInDeg: 0 + 30 + 15 },
+{ scrunchDir:  1, xOff:  0, yOff:  80, radius: 90, rotAccelInDeg:  10, rotationInDeg: 90 - 15 },
+{ scrunchDir:  1, xOff:  0, yOff:  80, radius: 90, rotAccelInDeg:  20, rotationInDeg: 90 + 15 },
 ];
 
 Obstacles = [
@@ -402,26 +402,29 @@ function drawLegs(scrunches, ctx)
 {
 	for(var i = 0; i < 8; i++)
 	{
+        var info = LegsInfo[i];
 		ctx.save();
-		//right legs
-		if(i < 2)
-		{
-			ctx.rotate(270 * Math.PI / 180);
-			ctx.translate(0 + (-30) * i, 75);
-		}
-		//bottom legs
-		else if(i < 6)
-		{
-			ctx.rotate(360 * Math.PI / 180);
-			ctx.translate(100 + (-30 * i), 35);
-		}
-		//left legs
-		else
-		{
-			ctx.rotate(90 * Math.PI / 180);
-			ctx.translate(195 - (30 * i), 75);
-		}
-		drawLeg(0, 0, scrunches[i], ctx);
+        ctx.rotate(info.rotation);
+        ctx.translate(info.xOff, info.yOff);
+//		//right legs
+//		if(i < 2)
+//		{
+//			ctx.rotate(270 * Math.PI / 180);
+//			ctx.translate(0 + (-30) * i, 75);
+//		}
+//		//bottom legs
+//		else if(i < 6)
+//		{
+//			ctx.rotate(360 * Math.PI / 180);
+//			ctx.translate(100 + (-30 * i), 35);
+//		}
+//		//left legs
+//		else
+//		{
+//			ctx.rotate(90 * Math.PI / 180);
+//			ctx.translate(195 - (30 * i), 75);
+//		}
+		drawLeg(0, 0, scrunches[i] * info.scrunchDir, ctx);
 		ctx.restore();
 	}
 }
@@ -435,16 +438,32 @@ function drawLeg(baseX, baseY, scrunch, ctx)
 		y: baseY - scrunch
 	};
 	var combineJoints = 5;
+
 	ctx.save();
 	ctx.rotate((scrunch * 5) * Math.PI / 180);
 	ctx.translate(baseX, baseY);
-    ctx.drawImage(images.legSegment1.img, 0, 0);
-	ctx.translate(0, images.legSegment1.img.height - scrunch - combineJoints);
+
+    var img = images.legSegment1.img;
+    ctx.save();
+    ctx.translate(-img.width / 2, 0);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+
+	ctx.translate(0, img.height - scrunch - combineJoints);
 	ctx.rotate((scrunch * 10) * Math.PI / 180);
-    ctx.drawImage(images.legSegment2.img, 0, 0);
-	ctx.translate(0, images.legSegment2.img.height - scrunch - combineJoints);
+
+    var img = images.legSegment2.img;
+    ctx.save();
+    ctx.translate(-img.width / 2, 0);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+
+	ctx.translate(0, img.height - scrunch - combineJoints);
 	ctx.rotate((scrunch * -10) * Math.PI / 180);
-    ctx.drawImage(images.legTip.img, 0, 0);
+
+    var img = images.legTip.img;
+    ctx.translate(-img.width / 2, 0);
+    ctx.drawImage(img, 0, 0);
 	ctx.restore();
     return;
 }
