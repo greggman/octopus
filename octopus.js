@@ -6,6 +6,9 @@ var g_clock = 0;
 // World scroll position.
 var g_scrollX = 0;
 var g_scrollY = 0;
+var g_scrollIntX = 0;
+var g_scrollIntY = 0;
+var g_obstacles = [];
 
 var CAMERA_CHASE_SPEED = 0.2;
 
@@ -29,7 +32,7 @@ images =
     },
     background:
     {
-        url: "images/octo-background.png"
+        url: "images/BG_tile.png"
     },
 	bodyHappy:
 	{
@@ -68,11 +71,15 @@ var LegsInfo = [
 { xOff: -1, yOff: -1, radius: 90, rotAccelInDeg:  20, rotationInDeg: 90 + 15 },
 ];
 
+Obstacles = [
+  "urchin01"
+];
+
 function main() {
   var requestId;
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
-  window.addEventListener('resize', resizeCanvas, true);
+  window.addEventListener('resize', resize, true);
   window.addEventListener('blur', pauseGame, true);
   window.addEventListener('focus', resumeGame, true);
   g_ctx = g_canvas.getContext("2d");
@@ -80,6 +87,8 @@ function main() {
 
   OctopusControl.setLegs(LegsInfo);
   OctopusControl.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
+
+  MakeLevel();
 
   var then = getTime();
   function mainLoop() {
@@ -91,6 +100,11 @@ function main() {
     update(elapsedTime);
 
     requestId = requestAnimFrame(mainLoop, g_canvas);
+  }
+
+  function resize() {
+    resizeCanvas();
+    update(0.0001);
   }
 
   function pauseGame() {
@@ -107,6 +121,30 @@ function main() {
   }
 }
 
+function MakeObstacle(type, x, y) {
+  var obj = {
+    x: x,
+    y: y,
+    type: type
+  };
+  g_obstacles.push(obj);
+};
+
+function MakeLevel() {
+  var y = g_canvas.height;
+  var width = g_canvas.width * 0.8;
+  var xOff = Math.floor((g_canvas.width - width) * 0.5);
+  for (var ii = 0; ii < 100; ++ii) {
+    var x = xOff + pseudoRandInt(g_canvas.width);
+    MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
+    y += g_canvas.height;
+  }
+}
+
+function CheckCollisions() {
+
+}
+
 function drawBackground(ctx) {
   var img = images.background.img;
   var imageWidth = img.width;
@@ -121,6 +159,9 @@ function drawBackground(ctx) {
   if (sy < 0) {
     sy = sy - (Math.floor(sy / imageHeight) + 1) * imageHeight;
   }
+  sx = sx % imageWidth;
+  sy = sy % imageHeight;
+
   ctx.save();
   ctx.translate(-sx, -sy);
   for (var yy = -1; yy < tilesDown; ++yy) {
@@ -131,20 +172,35 @@ function drawBackground(ctx) {
   ctx.restore();
 }
 
-function update(elapsedTime) {
-  g_ctx.clearRect(0, 0, g_canvas.width, g_canvas.height);
+function drawObstacles(ctx) {
+  ctx.save();
+  ctx.translate(-g_scrollIntX, -g_scrollIntY);
+  for (var ii = 0; ii < g_obstacles.length; ++ii) {
+    var obj = g_obstacles[ii];
+    var img = images[obj.type].img;
+    ctx.drawImage(
+        img,
+        obj.x - Math.floor(img.width / 2),
+        obj.y - Math.floor(img.height / 2));
+  }
+  ctx.restore();
+}
 
+function update(elapsedTime) {
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
-  var targetX = octoInfo.x - g_canvas.width / 2;
-  var targetY = octoInfo.y - g_canvas.height / 2;
+  var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
+  var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
   g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
   g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
+  g_scrollIntX = Math.floor(g_scrollX);
+  g_scrollIntY = Math.floor(g_scrollY);
   drawBackground(g_ctx);
+  drawObstacles(g_ctx);
 
   g_ctx.save();
-  g_ctx.translate(octoInfo.x - g_scrollX, octoInfo.y - g_scrollY);
+  g_ctx.translate(octoInfo.x - g_scrollIntX, octoInfo.y - g_scrollIntY);
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   var legScrunches = [0, 3, 5, 7, 10, 12, 13, 15];
