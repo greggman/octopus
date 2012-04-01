@@ -101,6 +101,7 @@ SHOOT_BACK_VELOCITY = -500;
       xAccel -= Math.sin(rot) * LEG_ACCELERATION;
       yAccel += Math.cos(rot) * LEG_ACCELERATION;
       rAccel += leg.rotAccel;
+      audio.play_sound('swim');
     }
   }
 

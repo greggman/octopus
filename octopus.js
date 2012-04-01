@@ -155,9 +155,9 @@ Sounds = {
     filename: "sounds/leg.mp3",
     samples: 3,
   },
-  leg: {
-    filename: "sounds/leg.mp3",
-    samples: 16,
+  swim: {
+    filename: "sounds/swim.mp3",
+    samples: 8,
   }
 };
 
