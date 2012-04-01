@@ -8,14 +8,21 @@ var g_scrollX = 0;
 var g_scrollY = 0;
 var g_scrollIntX = 0;
 var g_scrollIntY = 0;
+var g_heightScale = 1;
 var g_obstacles = [];
+var g_inCollision = false;
 
+var LEVEL_WIDTH = 1024;
+var SIDE_LIMIT = 100;
 var CAMERA_CHASE_SPEED = 0.2;
+var OCTOPUS_RADIUS = 100;
+var INK_DURATION = 1;
+var INK_LEAK_DURATION = 1;
+var INK_COUNT = 5;
 
 function resizeCanvas() {
-  if (g_canvas.width != g_canvas.clientWidth ||
-      g_canvas.height != g_canvas.clientHeight) {
-    g_canvas.width = g_canvas.clientWidth;
+  if (g_canvas.height != g_canvas.clientHeight) {
+    g_canvas.width = LEVEL_WIDTH;
     g_canvas.height = g_canvas.clientHeight;
   }
 }
@@ -28,7 +35,14 @@ images =
 {
     urchin01:
     {
-        url: "images/urchin01.png"
+        url: "images/urchin1.png"
+    },
+    urchin02:
+    {
+        url: "images/urchin2.png"
+    },
+    ink01: {
+        url: "images/octopus-ink.png"
     },
     background:
     {
@@ -76,7 +90,8 @@ var LegsInfo = [
 ];
 
 Obstacles = [
-  "urchin01"
+  {name:"urchin01", radius: 150},
+  {name:"urchin02", radius: 150}
 ];
 
 function main() {
@@ -146,7 +161,26 @@ function MakeLevel() {
 }
 
 function CheckCollisions() {
-
+  g_inCollision = false;
+  var octoInfo = OctopusControl.getInfo();
+  for (var ii = 0; ii < g_obstacles.length; ++ii) {
+    var obj = g_obstacles[ii];
+    var dx = obj.x - octoInfo.x;
+    var dy = obj.y - octoInfo.y;
+    //g_ctx.font = "12pt monospace";
+    //g_ctx.fillStyle = "white";
+    //g_ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
+    var rad = obj.type.radius + OCTOPUS_RADIUS;
+    var radSq = rad * rad;
+    var distSq = dx * dx + dy * dy;
+    //g_ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
+    if (distSq < radSq) {
+      g_inCollision = true;
+      OctopusControl.shootBack(obj);
+      InkSystem.startInk(dx / 2, dy / 2);
+      break;
+    }
+  }
 }
 
 function drawBackground(ctx) {
@@ -154,7 +188,7 @@ function drawBackground(ctx) {
   var imageWidth = img.width;
   var imageHeight = img.height;
   var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth;
-  var tilesDown = (g_canvas.height + imageHeight - 1) / imageHeight;
+  var tilesDown = (Math.floor(g_canvas.height / g_heightScale) + imageHeight - 1) / imageHeight;
   var sx = Math.floor(g_scrollX);
   var sy = Math.floor(g_scrollY);
   if (sx < 0) {
@@ -181,11 +215,12 @@ function drawObstacles(ctx) {
   ctx.translate(-g_scrollIntX, -g_scrollIntY);
   for (var ii = 0; ii < g_obstacles.length; ++ii) {
     var obj = g_obstacles[ii];
-    var img = images[obj.type].img;
+    var img = images[obj.type.name].img;
     ctx.drawImage(
         img,
         obj.x - Math.floor(img.width / 2),
         obj.y - Math.floor(img.height / 2));
+    //drawCircleLine(ctx, obj.x, obj.y, obj.type.radius, "white");
   }
   ctx.restore();
 }
@@ -194,12 +229,17 @@ legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 legBackSwing = [false, false, false, false, false, false, false, false];
 
 function update(elapsedTime) {
+  CheckCollisions();
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
+  g_heightScale = g_canvas.clientWidth / g_canvas.width;
+  g_ctx.save();
+  g_ctx.scale(1, g_heightScale);
+
   var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
   var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
-  g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
+  //g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
   g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
   g_scrollIntX = Math.floor(g_scrollX);
   g_scrollIntY = Math.floor(g_scrollY);
@@ -247,8 +287,13 @@ function update(elapsedTime) {
   }
   //draw collectibles
   drawItem(images.collectible, 100, 200, 0, g_ctx);
-  
+  // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
+  // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
+  //drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   g_ctx.restore();
+
+  InkSystem.drawInks(g_ctx);
+  g_ctx.restore(); // for screen scale
 }
 
 function drawCircle(ctx, x, y, radius, color) {
@@ -256,6 +301,13 @@ function drawCircle(ctx, x, y, radius, color) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2, false);
   ctx.fill();
+}
+
+function drawCircleLine(ctx, x, y, radius, color) {
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+  ctx.stroke();
 }
 
 function LoadImage(url, callback)
@@ -363,4 +415,66 @@ function LoadAllImages(images, callback)
 		);
 	}
 }
+
+InkSystem = (function(){
+  var inks = [];
+  var inkTime = 0;
+  var inkXOff = 0;
+  var inkYOff = 0;
+  var inkCount = 0;
+
+  function drawInks(ctx) {
+    var ii;
+    for (var ii = 0; ii < inks.length; ++ii) {
+      var ink = inks[ii];
+      if (ink.time > g_clock) {
+        break;
+      }
+    }
+    inks.splice(0, ii);
+
+    if (inkTime < g_clock && inkCount > 0) {
+      inkTime = getTime() + INK_LEAK_DURATION / INK_COUNT;
+      --inkCount;
+      var octoInfo = OctopusControl.getInfo();
+      birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
+    }
+
+    var alpha = ctx.globalAlpha;
+    for (var ii = 0; ii < inks.length; ++ii) {
+      var ink = inks[ii];
+      ctx.save();
+      ctx.translate(ink.x, ink,y);
+	  ctx.rotate(ink.rot);
+      ctx.globalAlpha = 1.0 - (ink.time - g_clock) / INK_DURATION;
+	  ctx.drawImage(images.ink01.img, 0, 0);
+      ctx.restore();
+    }
+    canvas.globalAlpha = alpha;
+  }
+
+  function birthInk(x, y) {
+    var ink = {
+      x: x,
+      y: y,
+      rot: Math.random() * Math.PI * 2,
+      time: getTime() + INK_DURATION
+    };
+    inks.push(ink);
+  }
+
+  function startInk(x, y) {
+    intXOff = x;
+    intYOff = y;
+    intCount = INK_COUNT;
+  }
+
+  return {
+    birthInk: birthInk,
+    drawInks: drawInks,
+    startInk: startInk,
+
+    dummy: undefined
+  }
+}());
 
