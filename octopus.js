@@ -16,6 +16,9 @@ var LEVEL_WIDTH = 1024;
 var SIDE_LIMIT = 100;
 var CAMERA_CHASE_SPEED = 0.2;
 var OCTOPUS_RADIUS = 100;
+var INK_DURATION = 1;
+var INK_LEAK_DURATION = 1;
+var INK_COUNT = 5;
 
 function resizeCanvas() {
   if (g_canvas.height != g_canvas.clientHeight) {
@@ -37,6 +40,9 @@ images =
     urchin02:
     {
         url: "images/urchin2.png"
+    },
+    ink01: {
+        url: "images/octopus-ink.png"
     },
     background:
     {
@@ -167,6 +173,7 @@ function CheckCollisions() {
     if (distSq < radSq) {
       g_inCollision = true;
       OctopusControl.shootBack(obj);
+      InkSystem.startInk(dx / 2, dy / 2);
       break;
     }
   }
@@ -266,6 +273,7 @@ function update(elapsedTime) {
   //drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   g_ctx.restore();
 
+  InkSystem.drawInks(g_ctx);
   g_ctx.restore(); // for screen scale
 }
 
@@ -405,6 +413,65 @@ function LoadAllImages(images, callback)
 	}
 }
 
-function drawInk() {
+InkSystem = (function(){
+  var inks = [];
+  var inkTime = 0;
+  var inkXOff = 0;
+  var inkYOff = 0;
+  var inkCount = 0;
 
-}
+  function drawInks(ctx) {
+    var ii;
+    for (var ii = 0; ii < inks.length; ++ii) {
+      var ink = inks[ii];
+      if (ink.time > g_clock) {
+        break;
+      }
+    }
+    inks.splice(0, ii);
+
+    if (inkTime < g_clock && inkCount > 0) {
+      inkTime = getTime() + INK_LEAK_DURATION / INK_COUNT;
+      --inkCount;
+      var octoInfo = OctopusControl.getInfo();
+      birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
+    }
+
+    var alpha = ctx.globalAlpha;
+    for (var ii = 0; ii < inks.length; ++ii) {
+      var ink = inks[ii];
+      ctx.save();
+      ctx.translate(ink.x, ink,y);
+	  ctx.rotate(ink.rot);
+      ctx.globalAlpha = 1.0 - (ink.time - g_clock) / INK_DURATION;
+	  ctx.drawImage(images.ink01.img, 0, 0);
+      ctx.restore();
+    }
+    canvas.globalAlpha = alpha;
+  }
+
+  function birthInk(x, y) {
+    var ink = {
+      x: x,
+      y: y,
+      rot: Math.random() * Math.PI * 2,
+      time: getTime() + INK_DURATION
+    };
+    inks.push(ink);
+  }
+
+  function startInk(x, y) {
+    intXOff = x;
+    intYOff = y;
+    intCount = INK_COUNT;
+  }
+
+  return {
+    birthInk: birthInk,
+    drawInks: drawInks,
+    startInk: startInk,
+
+    dummy: undefined
+  }
+}());
+
