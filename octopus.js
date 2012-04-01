@@ -1,5 +1,6 @@
 window.onload = main;
 
+var health = 9;
 var g_canvas;
 var g_ctx;
 var g_clock = 0;
@@ -144,6 +145,22 @@ images =
 	collectible:
 	{
 		url: "images/inkdrop.png"
+	},
+	health0:
+	{
+		url: "images/inkbottle_1.png"
+	},
+	health1:
+	{
+		url: "images/inkbottle_2.png"
+	},
+	health2:
+	{
+		url: "images/inkbottle_3.png"
+	},
+	health3:
+	{
+		url: "images/inkbottle_full .png"
 	}
 };
 
@@ -277,6 +294,7 @@ function CheckCollisions() {
       OctopusControl.shootBack(obj);
       InkSystem.startInk(dx / 2, dy / 2);
       audio.play_sound('ouch');
+	  health = health - 3;//take damage
       break;
     }
   }
@@ -298,6 +316,11 @@ function CheckCollection()
 		if(distSq < radSq)
 		{
 			//collect stuffs!
+			// health++;//get healed a little
+			if(health > 9)
+			{
+				health = 9;
+			}
 			itemsToRemove.push(ii);
 		}
 	}
@@ -333,6 +356,37 @@ function drawBackground(ctx) {
     }
   }
   ctx.restore();
+}
+
+function drawHealthHUD(x, y, ctx)
+{
+	var hpCounter = health;
+	ctx.save();
+	ctx.translate(x, y);
+	for(var ii = 0; ii < 3; ii++)
+	{
+		if(hpCounter >= 3)
+		{
+			ctx.drawImage(images.health3.img, 0, 0);
+			hpCounter = hpCounter - 3;
+		}
+		else if(hpCounter >= 2)
+		{
+			ctx.drawImage(images.health2.img, 0, 0);
+			hpCounter = hpCounter - 2;
+		}
+		else if(hpCounter >= 1)
+		{
+			ctx.drawImage(images.health1.img, 0, 0);
+			hpCounter = hpCounter - 1;
+		}
+		else
+		{
+			ctx.drawImage(images.health0.img, 0, 0);
+		}
+		ctx.translate(-images.health1.img.width, 0);
+	}
+	ctx.restore();
 }
 
 function drawObstacles(ctx) {
@@ -449,7 +503,10 @@ function update(elapsedTime) {
   drawCollectibles(g_ctx);
 
   g_ctx.save();
-  g_ctx.translate(octoInfo.x, octoInfo.y);
+  g_ctx.translate(0, octoInfo.y);
+  drawHealthHUD(g_canvas.width - images.health1.img.width,
+	-2 * images.health1.img.height, g_ctx);//hud should follow octo translate but not rotation
+  g_ctx.translate(octoInfo.x, 0);
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawLegs(legMovement, g_ctx);
