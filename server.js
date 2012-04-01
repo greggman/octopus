@@ -46,13 +46,13 @@ var applySettings = function(obj, dst) {
   }
 };
 
-var http = require('http'),
-    url = require('url'),
-    fs = require('fs'),
-    io = require('socket.io'),
-    sys = require('sys'),
-    path = require('path'),
-    querystring = require('querystring');
+var http = require('http');
+var url = require('url');
+var fs = require('fs');
+var io = require('socket.io');
+var sys = require('util');
+var path = require('path');
+var querystring = require('querystring');
 
 for (var ii = 2; ii < process.argv.length; ++ii) {
     var flag = process.argv[ii];
@@ -112,7 +112,7 @@ function saveScreenshotFromDataURL(dataURL) {
 }
 
 server = http.createServer(function(req, res){
-sys.print("req: " + req.method + '\n');
+sys.print("req: " + req.method + ' ');
   // your normal server code
   if (req.method == "POST") {
     postHandler(req, function(query) {
@@ -178,19 +178,22 @@ send403 = function(res){
   res.end();
 };
 
-sys.print("Listening on port: " + g.port + "\n");
-server.listen(g.port);
-
 // socket.io
-var io = io.listen(server),
-    buffer = [];
+var buffer = [];
 
 var g_clients = {};
 var g_numClients = 0;
 var g_servers = {};
 var g_numServers = 0;
+var g_count = 0;
 
-io.on('connection', function(client){
+io = io.listen(server);
+sys.print("Listening on port: " + g.port + "\n");
+server.listen(g.port);
+
+io.sockets.on('connection', function(client){
+  client.sessionId = ++g_count;
+  sys.print("connection: cid:" + client.sessionId + "\n");
   addClient(client);
 
   sendMsgToServer({
@@ -199,7 +202,7 @@ io.on('connection', function(client){
   });
 
   client.on('message', function(message){
-    //console.log("msg:" + message);
+    console.log("cid:" + client.sessionId + " msg:" + message);
     processMessage(client, message);
   });
 
@@ -222,10 +225,12 @@ function addClient(client) {
 
 function removeClient(client) {
   delete g_clients[client.sessionId];
-  --g_numClients;
-  console.log("remove: num clients: " + g_numClients);
-  if (g_numClients == 0) {
-    console.log("all clients disconnected");
+  if (g_numClients) {
+    --g_numClients;
+    console.log("remove: num clients: " + g_numClients);
+    if (g_numClients == 0) {
+      console.log("all clients disconnected");
+    }
   }
 }
 
@@ -259,7 +264,7 @@ function sendMsgToServer(msg) {
   }
   for (var id in g_servers) {
     var server = g_servers[id];
-    server.send(msg);
+    server.emit('message', msg);
     haveServer = true;
   }
 }
@@ -299,6 +304,7 @@ function sendMsgToServer(msg) {
 //
 
 function processMessage(client, message) {
+  sys.print(JSON.stringify(message));
   switch (message.cmd) {
     case 'server':
       removeClient(client);
@@ -308,12 +314,18 @@ function processMessage(client, message) {
     case 'client': {
       var client = g_clients[message.id];
       if (client) {
-        client.send(message.data);
+        client.emit('message', message.data);
       } else {
         console.log("no client: " + message.id);
       }
       break;
     }
+    case 'broadcast':
+      message.cmd = 'update';
+      for (var id in g_clients) {
+        g_clients[id].emit('message', message);
+      }
+      break;
     case 'update':
       message.id = client.sessionId;
       sendMsgToServer(message);

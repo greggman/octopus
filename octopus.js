@@ -40,34 +40,7 @@ var OPTIONS = {
   URCHIN_SCALE: 1,
 };
 
-var getURLOptions = function(obj) {
-  var s = window.location.href;
-  var q = s.indexOf("?");
-  var e = s.indexOf("#");
-  if (e < 0) {
-    e = s.length;
-  }
-  var query = s.substring(q + 1, e);
-  var pairs = query.split("&");
-  for (var ii = 0; ii < pairs.length; ++ii) {
-    var keyValue = pairs[ii].split("=");
-    var key = keyValue[0];
-    var value = decodeURIComponent(keyValue[1]);
-    try {
-      value = parseFloat(value);
-    } catch (e) {
-    }
-    obj[key] = value;
-  }
-};
-
 getURLOptions(OPTIONS);
-
-function log(msg) {
-  if (window.console && window.console.log) {
-    window.console.log(msg);
-  }
-}
 
 function print(msg) {
   if (OPTIONS.debug) {
@@ -209,7 +182,7 @@ Sounds = {
 };
 
 function main() {
-
+  connect();
   var requestId;
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
