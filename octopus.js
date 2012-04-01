@@ -10,6 +10,7 @@ var g_scrollIntX = 0;
 var g_scrollIntY = 0;
 var g_heightScale = 1;
 var g_obstacles = [];
+var g_collectibles = [];
 var g_inCollision = false;
 
 var LEVEL_WIDTH = 1024;
@@ -49,7 +50,7 @@ images =
         url: "images/urchin2.png"
     },
     ink01: {
-        url: "images/octopus-ink.png"
+        url: "images/inkdrop.png"
     },
     background:
     {
@@ -57,15 +58,15 @@ images =
     },
 	bodyHappy:
 	{
-		url: "images/octopus_body.png"
+		url: "images/octopus_body_yay.png"
 	},
 	bodyNormal:
 	{
 		url: "images/octopus_body.png"
 	},
-	bodyDerp:
+	bodyOw:
 	{
-		url: "images/octopus_body.png"
+		url: "images/octopus_body_ow.png"
 	},
 	legTip:
 	{
@@ -78,6 +79,10 @@ images =
 	legSegment2:
 	{
 		url: "images/octopus_leg2.png"
+	},
+	collectible:
+	{
+		url: "images/inkdrop.png"
 	}
 };
 
@@ -165,14 +170,27 @@ function MakeObstacle(type, x, y) {
   g_obstacles.push(obj);
 };
 
+function MakeCollectible(x, y)
+{
+	var obj = 
+	{
+		x: x,
+		y: y
+	};
+	g_collectibles.push(obj);
+}
+
 function MakeLevel() {
   var y = g_canvas.height;
   var width = g_canvas.width * 0.8;
   var xOff = Math.floor((g_canvas.width - width) * 0.5);
   for (var ii = 0; ii < 100; ++ii) {
+	//make obstacle
     var x = xOff + pseudoRandInt(g_canvas.width);
     MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
     y += g_canvas.height;
+	//make collectible
+	MakeCollectible(pseudoRandInt(g_canvas.width), y);
   }
 }
 
@@ -198,6 +216,25 @@ function CheckCollisions() {
       break;
     }
   }
+}
+
+function CheckCollection()
+{
+	var octoInfo = OctopusControl.getInfo();
+	for(var ii = 0; ii < g_collectibles.length; ii++)
+	{
+		var obj = g_collectibles[ii];
+		var dx = obj.x - octoInfo.x;
+		var dy = obj.y - octoinfo.y;
+		var rad = obj.type.radius + OCTOPUS_RADIUS;
+		var radSq = rad * rad;
+		var distSq = dx * dx + dy * dy;
+		
+		if(distSq < radSq)
+		{
+			//collect stuffs!
+		}
+	}
 }
 
 function drawBackground(ctx) {
@@ -239,6 +276,22 @@ function drawObstacles(ctx) {
   }
 }
 
+function drawCollectibles(ctx)
+{
+	ctx.save();
+	ctx.translate(-g_scrollIntX, -g_scrollIntY);
+	for(var i = 0; i < g_collectibles.length; i++)
+	{
+		var obj = g_collectibles[i];
+		var img = images.collectible.img;
+		ctx.drawImage(
+			img,
+			obj.x - Math.floor(img.width / 2),
+			obj.y - Math.floor(img.height / 2));
+	}
+	ctx.restore();
+}
+
 legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 legBackSwing = [false, false, false, false, false, false, false, false];
 
@@ -263,13 +316,14 @@ function update(elapsedTime) {
   g_ctx.translate(-g_scrollIntX, -g_scrollIntY);
 
   drawObstacles(g_ctx);
+  drawCollectibles(g_ctx);
 
   g_ctx.save();
   g_ctx.translate(octoInfo.x, octoInfo.y);
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawLegs(legMovement, g_ctx);
-  drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
+  drawOctopusBody(images.bodyNormal, 0, 0, 0, g_ctx);
   for (var ii = 0; ii < LegsInfo.length; ++ii) {
 	var legInfo = LegsInfo[ii];
 	//start leg animation
@@ -396,7 +450,7 @@ function drawOctopusBody(image, x, y, rotation, ctx)
 function drawItem(image, x, y, rotation, ctx)
 {
 	ctx.save();
-//	ctx.rotate(rotation);
+	ctx.rotate(rotation);
 	ctx.drawImage(image.img, x, y);
 	ctx.restore();
 }
