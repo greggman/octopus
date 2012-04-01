@@ -87,9 +87,9 @@ OctopusControl = (function(){
     rotation: 0
   };
 
-LEG_FRICTION = 0.9;
-LEG_ROT_FRICTION = 0.9;
-LEG_ACCELERATION = 150;
+LEG_FRICTION = 0.98;
+LEG_ROT_FRICTION = 0.98;
+LEG_ACCELERATION = 60;
 LEG_UP_DURATION = 0.8;
 SHOOT_BACK_VELOCITY = -500;
 
@@ -152,6 +152,8 @@ SHOOT_BACK_VELOCITY = -500;
     xAccel = 0;
     yAccel = 0;
     rAccel = 0;
+
+    octoInfo.x = Math.max(SIDE_LIMIT, Math.min(LEVEL_WIDTH - SIDE_LIMIT, octoInfo.x));
   }
 
   function shootBack(other) {

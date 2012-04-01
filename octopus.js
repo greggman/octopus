@@ -12,12 +12,14 @@ var g_heightScale = 1;
 var g_obstacles = [];
 var g_inCollision = false;
 
+var LEVEL_WIDTH = 1024;
+var SIDE_LIMIT = 100;
 var CAMERA_CHASE_SPEED = 0.2;
 var OCTOPUS_RADIUS = 100;
 
 function resizeCanvas() {
   if (g_canvas.height != g_canvas.clientHeight) {
-    g_canvas.width = 1024;
+    g_canvas.width = LEVEL_WIDTH;
     g_canvas.height = g_canvas.clientHeight;
   }
 }
@@ -207,7 +209,7 @@ function drawObstacles(ctx) {
         img,
         obj.x - Math.floor(img.width / 2),
         obj.y - Math.floor(img.height / 2));
-    drawCircleLine(ctx, obj.x, obj.y, obj.type.radius, "white");
+    //drawCircleLine(ctx, obj.x, obj.y, obj.type.radius, "white");
   }
   ctx.restore();
 }
@@ -223,7 +225,7 @@ function update(elapsedTime) {
 
   var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
   var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
-  g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
+  //g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
   g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
   g_scrollIntX = Math.floor(g_scrollX);
   g_scrollIntY = Math.floor(g_scrollY);
@@ -236,19 +238,19 @@ function update(elapsedTime) {
   var legScrunches = [0, 10, 13, 5, 3, 7, 15, 10];
   drawLegs(15, legScrunches, g_ctx);
   drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
-  // for (var ii = 0; ii < LegsInfo.length; ++ii) {
-    // var legInfo = LegsInfo[ii];
-    // g_ctx.save();
-    // g_ctx.rotate(legInfo.rotation);
-	// g_ctx.translate(0, 100);
-	// // drawLeg(0, 0, 15, g_ctx);
-    // drawCircle(g_ctx, 0, 0, 15,
-               // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
-    // g_ctx.restore();
-  // }
+   for (var ii = 0; ii < LegsInfo.length; ++ii) {
+     var legInfo = LegsInfo[ii];
+     g_ctx.save();
+     g_ctx.rotate(legInfo.rotation);
+	 g_ctx.translate(0, 100);
+   //   drawLeg(0, 0, 15, g_ctx);
+     drawCircle(g_ctx, 0, 0, 15,
+                g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
+     g_ctx.restore();
+   }
   // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
-  drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+  //drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   g_ctx.restore();
 
   g_ctx.restore(); // for screen scale
