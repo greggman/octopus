@@ -1,6 +1,8 @@
 window.onload = main;
 
 var HasLost = false;
+var DistanceTraveled = 0;
+var PrevPos = {x: 0, y: 0};
 //make legs drift if the octopus is dead
 var legDrift = .5;
 var deathAnimDistance = 0;
@@ -26,7 +28,7 @@ var OPTIONS = {
   LEVEL_WIDTH: 1024,
   SIDE_LIMIT: 100,
   CAMERA_CHASE_SPEED: 0.2,
-  OCTOPUS_RADIUS: 100,
+  OCTOPUS_RADIUS: 85,
   INK_DURATION: 1,
   INK_LEAK_DURATION: 1.5,
   INK_COUNT: 10,
@@ -39,6 +41,8 @@ var OPTIONS = {
   SHOOT_BACK_VELOCITY: -500,
   URCHIN_SCALE1: .4,
   URCHIN_SCALE2: .8,
+  COLLECTIBLE_SCALE: .5,
+  
 };
 
 getURLOptions(OPTIONS);
@@ -167,8 +171,8 @@ var LegsInfo = [
 ];
 
 Obstacles = [
-  {name:"urchin01", radius: 150, scale: .4},//150 original
-  {name:"urchin02", radius: 150, scale: .8}//scale should be .4 and .8
+  {name:"urchin01", radius: 125, scale: .4},//150 original
+  {name:"urchin02", radius: 125, scale: .8}//scale should be .4 and .8
 ];
 
 Sounds = {
@@ -262,7 +266,7 @@ function MakeCollectible(x, y, radius)
 		x: x,
 		y: y,
 	    type: {
-		  radius: radius
+		  radius: radius * OPTIONS.COLLECTIBLE_SCALE
 		},
 		radius: radius,
 		isCollected: false
@@ -444,10 +448,13 @@ function drawCollectibles(ctx)
 		{
 			ctx.save();
 			var img = images.collectible.img;
-			ctx.drawImage(
-				img,
-				obj.x - Math.floor(img.width / 2),
-				obj.y - Math.floor(img.height / 2));
+			var scale = OPTIONS.COLLECTIBLE_SCALE;//here
+			ctx.translate(obj.x, obj.y);
+			ctx.scale(scale, scale);
+			ctx.save()
+			ctx.translate(-Math.floor(img.width / 2), -Math.floor(img.height / 2));
+			ctx.drawImage(img, 0, 0);
+			ctx.restore();
 			if (OPTIONS.debug) {
 				drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
 			}
