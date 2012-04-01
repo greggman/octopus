@@ -9,9 +9,11 @@ var g_scrollY = 0;
 var g_scrollIntX = 0;
 var g_scrollIntY = 0;
 var g_heightScale = 1;
+var g_baseScale = 1;
 var g_obstacles = [];
 var g_collectibles = [];
 var g_inCollision = false;
+var g_printMsgs = [];
 var OPTIONS = { };
 
 var LEG_SCRUNCH = 11;
@@ -30,6 +32,21 @@ function log(msg) {
   if (window.console && window.console.log) {
     window.console.log(msg);
   }
+}
+
+function print(msg) {
+  if (OPTIONS.debug) {
+    g_printMsgs.push(msg);
+  }
+}
+
+function drawPrint(ctx) {
+  ctx.font = "10pt monospace";
+  ctx.fillStyle = "white";
+  for (var ii = 0; ii < g_printMsgs.length; ++ii) {
+    ctx.fillText(g_printMsgs[ii], 10, ii * 15 + 20);
+  }
+  g_printMsgs = [];
 }
 
 var getURLOptions = function(obj) {
@@ -172,6 +189,7 @@ function main() {
     g_clock += elapsedTime;
 
     update(elapsedTime);
+    drawPrint(g_ctx);
 
     requestId = requestAnimFrame(mainLoop, g_canvas);
   }
@@ -283,8 +301,8 @@ function drawBackground(ctx) {
   var img = images.background.img;
   var imageWidth = img.width;
   var imageHeight = img.height;
-  var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth;
-  var tilesDown = (Math.floor(g_canvas.height / g_heightScale) + imageHeight - 1) / imageHeight;
+  var tilesAcross = (g_canvas.width / g_baseScale + imageWidth - 1) / imageWidth;
+  var tilesDown = (Math.floor(g_canvas.height / g_baseScale / g_heightScale) + imageHeight - 1) / imageHeight;
   var sx = Math.floor(g_scrollX);
   var sy = Math.floor(g_scrollY);
   if (sx < 0) {
@@ -346,20 +364,70 @@ function update(elapsedTime) {
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
-  g_heightScale = g_canvas.clientWidth / g_canvas.width;
   g_ctx.save();
-  g_ctx.scale(1, g_heightScale);
 
-  var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
-  var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
-  //g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
-  g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
+  if (OPTIONS.battle) {
+    var otherX = 512;
+    var otherY = 512;
+    var dx = otherX - octoInfo.x;
+    var dy = otherY - octoInfo.y;
+    var centerX = octoInfo.x + dx * 0.5;
+    var centerY = octoInfo.y + dy * 0.5;
+
+
+    g_heightScale = g_canvas.clientWidth / g_canvas.width;
+    var screenWidth = 1024
+    var screenHeight = g_canvas.height / g_heightScale;
+    var adx = Math.abs(dx);
+    var ady = Math.abs(dy);
+
+    print("sw: " + screenWidth + " sh:" + screenHeight.toFixed(0));
+    print("adx: " + adx.toFixed(0) + " ady: " + ady.toFixed(0));
+
+    var halfScreenWidth = screenWidth / 2;
+    var halfScreenHeight = screenHeight / 2;
+
+    g_baseScale = 1;
+    if (adx > halfScreenWidth) {
+      g_baseScale = halfScreenWidth / adx;
+    }
+    if (ady > halfScreenHeight) {
+      var yBaseScale = halfScreenHeight / ady;
+      g_baseScale = Math.min(g_baseScale, yBaseScale);
+    }
+
+    print("bs: " + g_baseScale.toFixed(3));
+
+    var targetX = centerX - g_canvas.width / g_baseScale / 2;
+    var targetY = centerY - g_canvas.height / g_baseScale / g_heightScale / 2;
+
+    g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
+    g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
+
+    g_ctx.scale(g_baseScale, g_baseScale * g_heightScale);
+  } else {
+    var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
+    var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
+
+    //g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
+    g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
+
+    g_heightScale = g_canvas.clientWidth / g_canvas.width;
+    g_ctx.scale(1, g_heightScale);
+  }
+
+
   g_scrollIntX = Math.floor(g_scrollX);
   g_scrollIntY = Math.floor(g_scrollY);
   drawBackground(g_ctx);
 
   g_ctx.save();
   g_ctx.translate(-g_scrollIntX, -g_scrollIntY);
+
+  if (OPTIONS.battle && OPTIONS.debug) {
+    drawCircle(g_ctx, otherX, otherY, 10, "yellow");
+    drawCircle(g_ctx, centerX, centerY, 5, "green");
+  }
 
   drawObstacles(g_ctx);
   drawCollectibles(g_ctx);

@@ -153,7 +153,10 @@ SHOOT_BACK_VELOCITY = -500;
     yAccel = 0;
     rAccel = 0;
 
-    octoInfo.x = Math.max(SIDE_LIMIT, Math.min(LEVEL_WIDTH - SIDE_LIMIT, octoInfo.x));
+    if (OPTIONS.battle) {
+    } else {
+      octoInfo.x = Math.max(SIDE_LIMIT, Math.min(LEVEL_WIDTH - SIDE_LIMIT, octoInfo.x));
+    }
   }
 
   function shootBack(other) {
