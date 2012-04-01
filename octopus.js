@@ -150,12 +150,13 @@ function MakeObstacle(type, x, y) {
   g_obstacles.push(obj);
 };
 
-function MakeCollectible(x, y)
+function MakeCollectible(x, y, radius)
 {
 	var obj = 
 	{
 		x: x,
-		y: y
+		y: y,
+		radius: radius
 	};
 	g_collectibles.push(obj);
 }
@@ -170,7 +171,7 @@ function MakeLevel() {
     MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
     y += g_canvas.height;
 	//make collectible
-	MakeCollectible(pseudoRandInt(g_canvas.width), y);
+	MakeCollectible(pseudoRandInt(g_canvas.width), y, 150);
   }
 }
 
@@ -200,19 +201,26 @@ function CheckCollisions() {
 function CheckCollection()
 {
 	var octoInfo = OctopusControl.getInfo();
+	var itemsToRemove = [];
 	for(var ii = 0; ii < g_collectibles.length; ii++)
 	{
 		var obj = g_collectibles[ii];
 		var dx = obj.x - octoInfo.x;
-		var dy = obj.y - octoinfo.y;
-		var rad = obj.type.radius + OCTOPUS_RADIUS;
+		var dy = obj.y - octoInfo.y;
+		var rad = obj.radius + OCTOPUS_RADIUS;
 		var radSq = rad * rad;
 		var distSq = dx * dx + dy * dy;
 		
 		if(distSq < radSq)
 		{
 			//collect stuffs!
+			itemsToRemove.push(ii);
 		}
+	}
+	//remove collected items
+	for(var ii = 0; ii < itemsToRemove; ii++)
+	{
+		g_collectibles.splice(itemsToRemove[ii], 1);
 	}
 }
 
@@ -279,6 +287,7 @@ legBackSwing = [false, false, false, false, false, false, false, false];
 
 function update(elapsedTime) {
   CheckCollisions();
+  CheckCollection();
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
