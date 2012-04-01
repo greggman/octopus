@@ -79,6 +79,7 @@ OctopusControl = (function(){
   var xAccel = 0;
   var yAccel = 0;
   var rAccel = 0;
+  var lastXAccel = 0;
 
   var octoInfo = {
     x: 0,
@@ -90,6 +91,7 @@ LEG_FRICTION = 0.9;
 LEG_ROT_FRICTION = 0.9;
 LEG_ACCELERATION = 150;
 LEG_UP_DURATION = 0.8;
+SHOOT_BACK_VELOCITY = -500;
 
   function handleDirection(event) {
     var leg = legsInfo[event.direction];
@@ -138,6 +140,9 @@ LEG_UP_DURATION = 0.8;
     xVel += xAccel;
     yVel += yAccel;
     rVel += rAccel;
+    if (xAccel != 0) {
+      lastXAccel = xAccel;
+    }
     octoInfo.x += xVel * elapsedTime;
     octoInfo.y += yVel * elapsedTime;
     octoInfo.rotation += rVel * elapsedTime;
@@ -149,8 +154,14 @@ LEG_UP_DURATION = 0.8;
     rAccel = 0;
   }
 
+  function shootBack(other) {
+    xAccel = -lastXAccel;
+    yAccel = SHOOT_BACK_VELOCITY;
+  }
+
   return {
     getInfo: getInfo,
+    shootBack: shootBack,
     setInfo: setInfo,
     setLegs: setLegs,
     update: update,

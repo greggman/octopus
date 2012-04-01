@@ -74,7 +74,7 @@ var LegsInfo = [
 ];
 
 Obstacles = [
-  {name:"urchin01", radius: 100}
+  {name:"urchin01", radius: 150}
 ];
 
 function main() {
@@ -144,20 +144,25 @@ function MakeLevel() {
 }
 
 function CheckCollisions() {
+  g_inCollision = false;
   var octoInfo = OctopusControl.getInfo();
-  var octoRadSq = OCTOPUS_RADIUS * OCTOPUS_RADIUS;
-  for (var ii = 0; ii < g_obstacles; ++ii) {
+  for (var ii = 0; ii < g_obstacles.length; ++ii) {
     var obj = g_obstacles[ii];
     var dx = obj.x - octoInfo.x;
     var dy = obj.y - octoInfo.y;
-    var radSq = obj.type.radius * obj.radius.type;
-    if (dx * dx + dy * dy > radSq + octoRadSq) {
+    //g_ctx.font = "12pt monospace";
+    //g_ctx.fillStyle = "white";
+    //g_ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
+    var rad = obj.type.radius + OCTOPUS_RADIUS;
+    var radSq = rad * rad;
+    var distSq = dx * dx + dy * dy;
+    //g_ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
+    if (distSq < radSq) {
       g_inCollision = true;
-      OctopusControl.shootBack();
+      OctopusControl.shootBack(obj);
       break;
     }
   }
-  g_inCollision = false;
 }
 
 function drawBackground(ctx) {
@@ -203,6 +208,7 @@ function drawObstacles(ctx) {
 }
 
 function update(elapsedTime) {
+  CheckCollisions();
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
@@ -218,7 +224,6 @@ function update(elapsedTime) {
   g_ctx.save();
   g_ctx.translate(octoInfo.x - g_scrollIntX, octoInfo.y - g_scrollIntY);
   g_ctx.rotate(octoInfo.rotation);
-  // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   var legScrunches = [0, 10, 13, 5, 3, 7, 15, 10];
   drawLegs(15, legScrunches, g_ctx);
   drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
@@ -234,6 +239,7 @@ function update(elapsedTime) {
   // }
   // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
+  drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   g_ctx.restore();
 }
 
