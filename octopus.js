@@ -1,5 +1,9 @@
 window.onload = main;
 
+var HasLost = false;
+//make legs drift if the octopus is dead
+var legDrift = .5;
+var deathAnimDistance = 0;
 var health = 9;
 var g_canvas;
 var g_ctx;
@@ -134,6 +138,14 @@ images =
 	health3:
 	{
 		url: "images/inkbottle_full .png"
+	},
+	playAgain:
+	{
+		url: "images/playAgainButton.png"
+	},
+	outOfInk:
+	{
+		url: "images/OutofInk.png"
 	}
 };
 var expression = 
@@ -373,7 +385,7 @@ function drawHealthHUD(x, y, ctx)
 		{
 			ctx.drawImage(images.health0.img, 0, 0);
 		}
-		ctx.translate(-images.health1.img.width, 0);
+		ctx.translate(images.health1.img.width, 0);
 	}
 	ctx.restore();
 }
@@ -424,9 +436,19 @@ legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 legBackSwing = [false, false, false, false, false, false, false, false];
 
 function update(elapsedTime) {
+	//check losing state
+	if(health <= 0)
+	{
+		HasLost = true;
+	}
+
   CheckCollisions();
   CheckCollection();
-  OctopusControl.update(elapsedTime);
+  //don't move the octopus if it's dead
+  if(!HasLost)
+  {
+    OctopusControl.update(elapsedTime);
+  }
   var octoInfo = OctopusControl.getInfo();
 
   g_ctx.save();
@@ -499,13 +521,33 @@ function update(elapsedTime) {
 
   g_ctx.save();
   g_ctx.translate(0, octoInfo.y);
-  drawHealthHUD(g_canvas.width - images.health1.img.width,
+  drawHealthHUD(0,
 	-2 * images.health1.img.height, g_ctx);//hud should follow octo translate but not rotation
   g_ctx.translate(octoInfo.x, 0);
   g_ctx.rotate(octoInfo.rotation);
+  
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
-  drawLegs(legMovement, g_ctx);
-  drawOctopusBody(expression.img, 0, 0, 0, g_ctx);
+  // only follow the octopus if you haven't yet lost
+  if(HasLost)
+  {
+	//make the octopus fly up
+	drawLegs(legMovement, g_ctx);
+	drawOctopusBody(expression.img, 0, -deathAnimDistance, 0, g_ctx);
+	if(deathAnimDistance < 500)
+	{
+		deathAnimDistance = deathAnimDistance + 4;
+	}
+	expression.timer = 100;
+	//display ending splash screen
+	g_ctx.drawImage(images.outOfInk.img, -.5 * images.outOfInk.img.width, 0);
+	g_ctx.drawImage(images.playAgain.img, -.5 * images.playAgain.img.width, 100);
+	g_ctx.restore();
+  }
+  else
+  {
+	  drawLegs(legMovement, g_ctx);
+	  drawOctopusBody(expression.img, 0, 0, 0, g_ctx);
+  }
   //change expression
   if(expression.timer > 0)
   {
@@ -609,8 +651,17 @@ function drawLegs(scrunches, ctx)
 //			ctx.rotate(90 * Math.PI / 180);
 //			ctx.translate(195 - (30 * i), 75);
 //		}
+		//make legs drift after death
+		if(HasLost)
+		{
+			ctx.translate(legDrift, legDrift);
+		}
 		drawLeg(0, 0, scrunches[i] * info.scrunchDir + info.scrunchDir, i, ctx);
 		ctx.restore();
+	}
+	if(HasLost)
+	{
+		legDrift = legDrift + 1;
 	}
 }
 
