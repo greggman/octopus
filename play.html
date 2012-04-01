@@ -26,9 +26,9 @@ canvas {
     z-index: 2;
 }
 #debug {
-    /*
+
     display: none;
-    */
+
     position: absolute;
     left: 0px;
     top: 0px;
@@ -40,13 +40,15 @@ canvas {
   -webkit-box-pack: center;
   height: 100%;
 }
-#instructions {
+.instruction {
     padding: 2em;
-    font-family: Helvetica, sans-serif;
-    font-size: 48pt;
-    font-weight: bold;
 }
 </style>
+<link rel="stylesheet" media="all and (max-device-width: 1024px) and (orientation:portrait)" href="tablet-portrait.css">
+<link rel="stylesheet" media="all and (max-device-width: 1024px) and (orientation:landscape)" href="tablet-landscape.css">
+<link rel="stylesheet" media="all and (max-device-width: 900px) and (orientation:portrait)" href="phone-portrait.css">
+<link rel="stylesheet" media="all and (max-device-width: 900px) and (orientation:landscape)" href="phone-landscape.css">
+<link rel="stylesheet" media="all and (min-device-width: 1025px)" href="monitor.css">
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="utils.js"></script>
 <script type="text/javascript" src="controller.js"></script>
@@ -56,7 +58,7 @@ canvas {
 <table width="100%" height="100%">
   <tr>
     <td>
-  <div id="instructions">Press Any Key or Touch the Screen to Wiggle a Tentacle</div>
+  <div class="instructions">Press Any Key or Touch the Screen to Wiggle a Tentacle</div>
     </td>
   </tr>
 </table>

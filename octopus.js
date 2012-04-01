@@ -369,6 +369,14 @@ function drawBackground(ctx) {
   ctx.restore();
 }
 
+function drawImageCentered(ctx, img, x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.translate(-img.width * 0.5, -img.height * 0.5);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+}
+
 function drawHealthHUD(x, y, ctx)
 {
 	var hpCounter = health;
@@ -540,14 +548,6 @@ function update(elapsedTime) {
 
   g_ctx.save();
   g_ctx.translate(0, octoInfo.y);
-  drawHealthHUD(0,
-	-2 * images.health1.img.height, g_ctx);//hud should follow octo translate but not rotation
-  if(HasLost)
-  {
-	//display ending splash screen
-	g_ctx.drawImage(images.outOfInk.img, .5 * images.outOfInk.img.width, 0);
-	g_ctx.drawImage(images.playAgain.img, 1.5 * images.playAgain.img.width, 100);
-  }
   g_ctx.translate(octoInfo.x, 0);
   g_ctx.rotate(octoInfo.rotation);
   
@@ -622,6 +622,13 @@ function update(elapsedTime) {
 
   InkSystem.drawInks(g_ctx, elapsedTime);
   g_ctx.restore(); // scroll
+  drawHealthHUD(20, 20, g_ctx);//hud should follow octo translate but not rotation
+  if(HasLost)
+  {
+	//display ending splash screen
+	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 2);
+	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 2 + 150);
+  }
   g_ctx.restore(); // for screen scale
 }
 
