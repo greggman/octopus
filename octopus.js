@@ -14,20 +14,49 @@ var g_obstacles = [];
 var g_collectibles = [];
 var g_inCollision = false;
 var g_printMsgs = [];
-var OPTIONS = { };
+var OPTIONS = {
+  LEG_SCRUNCH: 11,
+  LEG_SCRUNCH_SPEED: 90,
+  LEG_UNSCRUNCH_SPEED: 20,
+  LEVEL_WIDTH: 1024,
+  SIDE_LIMIT: 100,
+  CAMERA_CHASE_SPEED: 0.2,
+  OCTOPUS_RADIUS: 100,
+  INK_DURATION: 1,
+  INK_LEAK_DURATION: 1.5,
+  INK_COUNT: 10,
+  INK_SCALE: 0.5,
+  LEG_COMBINE_JOINTS: 11,
+  LEG_FRICTION: 0.98,
+  LEG_ROT_FRICTION: 0.98,
+  LEG_ACCELERATION: 60,
+  LEG_UP_DURATION: 0.8,
+  SHOOT_BACK_VELOCITY: -500,
+  URCHIN_SCALE: 1,
+};
 
-var LEG_SCRUNCH = 11;
-var LEG_SCRUNCH_SPEED = 90;
-var LEG_UNSCRUNCH_SPEED = 20;
-var LEVEL_WIDTH = 1024;
-var SIDE_LIMIT = 100;
-var CAMERA_CHASE_SPEED = 0.2;
-var OCTOPUS_RADIUS = 100;
-var INK_DURATION = 1;
-var INK_LEAK_DURATION = 1.5;
-var INK_COUNT = 10;
-var INK_SCALE = 0.5;
-var LEG_COMBINE_JOINTS = 11;
+var getURLOptions = function(obj) {
+  var s = window.location.href;
+  var q = s.indexOf("?");
+  var e = s.indexOf("#");
+  if (e < 0) {
+    e = s.length;
+  }
+  var query = s.substring(q + 1, e);
+  var pairs = query.split("&");
+  for (var ii = 0; ii < pairs.length; ++ii) {
+    var keyValue = pairs[ii].split("=");
+    var key = keyValue[0];
+    var value = decodeURIComponent(keyValue[1]);
+    try {
+      value = parseFloat(value);
+    } catch (e) {
+    }
+    obj[key] = value;
+  }
+};
+
+getURLOptions(OPTIONS);
 
 function log(msg) {
   if (window.console && window.console.log) {
@@ -50,23 +79,6 @@ function drawPrint(ctx) {
   g_printMsgs = [];
 }
 
-var getURLOptions = function(obj) {
-  var s = window.location.href;
-  var q = s.indexOf("?");
-  var e = s.indexOf("#");
-  if (e < 0) {
-    e = s.length;
-  }
-  var query = s.substring(q + 1, e);
-  var pairs = query.split("&");
-  for (var ii = 0; ii < pairs.length; ++ii) {
-    var keyValue = pairs[ii].split("=");
-    var key = keyValue[0];
-    var value = decodeURIComponent(keyValue[1]);
-    obj[key] = value;
-  }
-};
-
 // return int from 0 to range - 1
 function randInt(range) {
   return Math.floor(Math.random() * range);
@@ -74,7 +86,7 @@ function randInt(range) {
 
 function resizeCanvas() {
   if (g_canvas.height != g_canvas.clientHeight) {
-    g_canvas.width = LEVEL_WIDTH;
+    g_canvas.width = OPTIONS.LEVEL_WIDTH;
     g_canvas.height = g_canvas.clientHeight;
   }
 }
@@ -163,8 +175,6 @@ Sounds = {
 };
 
 function main() {
-  getURLOptions(OPTIONS);
-
 
   var requestId;
   g_canvas = document.getElementById("canvas");
@@ -258,7 +268,7 @@ function CheckCollisions() {
     //g_ctx.font = "12pt monospace";
     //g_ctx.fillStyle = "white";
     //g_ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
-    var rad = obj.type.radius + OCTOPUS_RADIUS;
+    var rad = obj.type.radius * OPTIONS.URCHIN_SCALE + OPTIONS.OCTOPUS_RADIUS;
     var radSq = rad * rad;
     var distSq = dx * dx + dy * dy;
     //g_ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
@@ -281,7 +291,7 @@ function CheckCollection()
 		var obj = g_collectibles[ii];
 		var dx = obj.x - octoInfo.x;
 		var dy = obj.y - octoInfo.y;
-		var rad = obj.radius + OCTOPUS_RADIUS;
+		var rad = obj.radius + OPTIONS.OCTOPUS_RADIUS;
 		var radSq = rad * rad;
 		var distSq = dx * dx + dy * dy;
 		
@@ -331,6 +341,7 @@ function drawObstacles(ctx) {
     var img = images[obj.type.name].img;
     ctx.save();
     var scale = 0.9 + Math.sin((g_clock + ii) * 4) * 0.05;
+    scale *= OPTIONS.URCHIN_SCALE;
     ctx.translate(obj.x, obj.y);
     ctx.scale(scale, scale);
     ctx.save();
@@ -406,16 +417,16 @@ function update(elapsedTime) {
     var targetX = centerX - g_canvas.width / g_baseScale / 2;
     var targetY = centerY - g_canvas.height / g_baseScale / g_heightScale / 2;
 
-    g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
-    g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
+    g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
+    g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
 
     g_ctx.scale(g_baseScale, g_baseScale * g_heightScale);
   } else {
     var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
     var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
 
-    //g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
-    g_scrollY += (targetY - g_scrollY) * CAMERA_CHASE_SPEED;
+    //g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
+    g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
 
     g_heightScale = g_canvas.clientWidth / g_canvas.width;
     g_ctx.scale(1, g_heightScale);
@@ -454,18 +465,18 @@ function update(elapsedTime) {
 	//increment leg animation
 	if(legBackSwing[ii] == true)
 	{
-		legMovement[ii] += LEG_SCRUNCH_SPEED * elapsedTime;
+		legMovement[ii] += OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime;
 	}
 	//check to see if leg backswing is done
-	if(legMovement[ii] > LEG_SCRUNCH)
+	if(legMovement[ii] > OPTIONS.LEG_SCRUNCH)
 	{
-		legMovement[ii] = LEG_SCRUNCH;
+		legMovement[ii] = OPTIONS.LEG_SCRUNCH;
 		legBackSwing[ii] = false;
 	}
 	//decrement leg animation
 	if(legMovement[ii] > 0)
 	{
-		legMovement[ii] -= LEG_UNSCRUNCH_SPEED * elapsedTime;
+		legMovement[ii] -= OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime;
 	}
     // var legInfo = LegsInfo[ii];
     // g_ctx.save();
@@ -479,7 +490,7 @@ function update(elapsedTime) {
   // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
   if (OPTIONS.debug) {
-    drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+    drawCircleLine(g_ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   }
   g_ctx.restore();
 
@@ -551,7 +562,7 @@ function drawLeg(baseX, baseY, scrunch, legNdx, ctx)
 	};
 
     var s = (scrunch > 0 ? 1 : -1)
-    //scrunch = LEG_SCRUNCH * s - scrunch;
+    //scrunch = OPTIONS.LEG_SCRUNCH * s - scrunch;
     scrunch += Math.sin(g_clock + legNdx);
 
 	ctx.save();
@@ -564,7 +575,7 @@ function drawLeg(baseX, baseY, scrunch, legNdx, ctx)
     ctx.drawImage(img, 0, 0);
     ctx.restore();
 
-	ctx.translate(0, img.height - scrunch - LEG_COMBINE_JOINTS);
+	ctx.translate(0, img.height - scrunch - OPTIONS.LEG_COMBINE_JOINTS);
     scrunch += Math.sin(g_clock + legNdx + 1);
 	ctx.rotate((scrunch * 10) * Math.PI / 180);
 
@@ -574,7 +585,7 @@ function drawLeg(baseX, baseY, scrunch, legNdx, ctx)
     ctx.drawImage(img, 0, 0);
     ctx.restore();
 
-	ctx.translate(0, img.height - scrunch - LEG_COMBINE_JOINTS);
+	ctx.translate(0, img.height - scrunch - OPTIONS.LEG_COMBINE_JOINTS);
     scrunch += Math.sin(g_clock + legNdx + 2);
 	ctx.rotate((scrunch * -10) * Math.PI / 180);
 
@@ -651,7 +662,7 @@ InkSystem = (function(){
     inks.splice(0, ii);
 
     if (inkTime < g_clock && inkCount > 0) {
-      inkTime = g_clock + INK_LEAK_DURATION / INK_COUNT;
+      inkTime = g_clock + OPTIONS.INK_LEAK_DURATION / OPTIONS.INK_COUNT;
       --inkCount;
       var octoInfo = OctopusControl.getInfo();
       birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
@@ -662,8 +673,8 @@ InkSystem = (function(){
       var ink = inks[ii];
       var img = ink.img;
       ink.rot += ink.rotVel * elapsedTime;
-      var lerp1to0 = (ink.time - g_clock) / INK_DURATION;
-      var scale = 0.5 + (1 - lerp1to0) * INK_SCALE;
+      var lerp1to0 = (ink.time - g_clock) / OPTIONS.INK_DURATION;
+      var scale = 0.5 + (1 - lerp1to0) * OPTIONS.INK_SCALE;
       ctx.save();
       ctx.translate(ink.x, ink.y);
 	  ctx.rotate(ink.rot);
@@ -688,7 +699,7 @@ InkSystem = (function(){
       img: images[inkImages[randInt(inkImages.length)]].img,
       rot: Math.random() * Math.PI * 2,
       rotVel: (Math.random() - 0.5) * Math.PI,
-      time: g_clock + INK_DURATION
+      time: g_clock + OPTIONS.INK_DURATION
     };
     inks.push(ink);
   }
@@ -696,7 +707,7 @@ InkSystem = (function(){
   function startInk(x, y) {
     inkXOff = x;
     inkYOff = y;
-    inkCount = INK_COUNT;
+    inkCount = OPTIONS.INK_COUNT;
   }
 
   return {

@@ -87,19 +87,13 @@ OctopusControl = (function(){
     rotation: 0
   };
 
-LEG_FRICTION = 0.98;
-LEG_ROT_FRICTION = 0.98;
-LEG_ACCELERATION = 60;
-LEG_UP_DURATION = 0.8;
-SHOOT_BACK_VELOCITY = -500;
-
   function handleDirection(event) {
     var leg = legsInfo[event.direction];
     if (leg.upTime < g_clock) {
-      leg.upTime = g_clock + LEG_UP_DURATION;
+      leg.upTime = g_clock + OPTIONS.LEG_UP_DURATION;
       var rot = octoInfo.rotation + leg.rotation;
-      xAccel -= Math.sin(rot) * LEG_ACCELERATION;
-      yAccel += Math.cos(rot) * LEG_ACCELERATION;
+      xAccel -= Math.sin(rot) * OPTIONS.LEG_ACCELERATION;
+      yAccel += Math.cos(rot) * OPTIONS.LEG_ACCELERATION;
       rAccel += leg.rotAccel;
       audio.play_sound('swim');
     }
@@ -147,16 +141,16 @@ SHOOT_BACK_VELOCITY = -500;
     octoInfo.x += xVel * elapsedTime;
     octoInfo.y += yVel * elapsedTime;
     octoInfo.rotation += rVel * elapsedTime;
-    xVel *= LEG_FRICTION;
-    yVel *= LEG_FRICTION;
-    rVel *= LEG_ROT_FRICTION;
+    xVel *= OPTIONS.LEG_FRICTION;
+    yVel *= OPTIONS.LEG_FRICTION;
+    rVel *= OPTIONS.LEG_ROT_FRICTION;
     xAccel = 0;
     yAccel = 0;
     rAccel = 0;
 
     if (OPTIONS.battle) {
     } else {
-      octoInfo.x = Math.max(SIDE_LIMIT, Math.min(LEVEL_WIDTH - SIDE_LIMIT, octoInfo.x));
+      octoInfo.x = Math.max(OPTIONS.SIDE_LIMIT, Math.min(OPTIONS.LEVEL_WIDTH - OPTIONS.SIDE_LIMIT, octoInfo.x));
     }
   }
 
@@ -172,11 +166,11 @@ SHOOT_BACK_VELOCITY = -500;
         dx = 0;
         dy = 0;
       }
-      xAccel = SHOOT_BACK_VELOCITY * dx;
-      yAccel = SHOOT_BACK_VELOCITY * dy;
+      xAccel = OPTIONS.SHOOT_BACK_VELOCITY * dx;
+      yAccel = OPTIONS.SHOOT_BACK_VELOCITY * dy;
     } else {
       xAccel = -lastXAccel;
-      yAccel = SHOOT_BACK_VELOCITY;
+      yAccel = OPTIONS.SHOOT_BACK_VELOCITY;
     }
   }
 
