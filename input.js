@@ -29,7 +29,7 @@ InputSystem = (function(){
   function addEvent(direction) {
     var event = {
       direction: direction,
-      time: getTime()
+      time: g_clock
     };
     eventQueue.push(event);
     var list = listeners['direction'];
@@ -43,7 +43,7 @@ InputSystem = (function(){
   }
 
   function removeOldEvents() {
-    var now = getTime();
+    var now = g_clock;
     var ii = 0;
     for (; ii < eventQueue.length; ++ii) {
       var event = eventQueue[ii];

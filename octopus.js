@@ -18,7 +18,8 @@ var CAMERA_CHASE_SPEED = 0.2;
 var OCTOPUS_RADIUS = 100;
 var INK_DURATION = 1;
 var INK_LEAK_DURATION = 1;
-var INK_COUNT = 5;
+var INK_COUNT = 10;
+var INK_SCALE = 1;
 
 function resizeCanvas() {
   if (g_canvas.height != g_canvas.clientHeight) {
@@ -207,8 +208,6 @@ function drawBackground(ctx) {
 }
 
 function drawObstacles(ctx) {
-  ctx.save();
-  ctx.translate(-g_scrollIntX, -g_scrollIntY);
   for (var ii = 0; ii < g_obstacles.length; ++ii) {
     var obj = g_obstacles[ii];
     var img = images[obj.type.name].img;
@@ -218,7 +217,6 @@ function drawObstacles(ctx) {
         obj.y - Math.floor(img.height / 2));
     //drawCircleLine(ctx, obj.x, obj.y, obj.type.radius, "white");
   }
-  ctx.restore();
 }
 
 legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -240,10 +238,14 @@ function update(elapsedTime) {
   g_scrollIntX = Math.floor(g_scrollX);
   g_scrollIntY = Math.floor(g_scrollY);
   drawBackground(g_ctx);
+
+  g_ctx.save();
+  g_ctx.translate(-g_scrollIntX, -g_scrollIntY);
+
   drawObstacles(g_ctx);
 
   g_ctx.save();
-  g_ctx.translate(octoInfo.x - g_scrollIntX, octoInfo.y - g_scrollIntY);
+  g_ctx.translate(octoInfo.x, octoInfo.y);
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawLegs(legMovement, g_ctx);
@@ -286,7 +288,8 @@ function update(elapsedTime) {
   //drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   g_ctx.restore();
 
-  InkSystem.drawInks(g_ctx);
+  InkSystem.drawInks(g_ctx, elapsedTime);
+  g_ctx.restore(); // scroll
   g_ctx.restore(); // for screen scale
 }
 
@@ -411,37 +414,44 @@ function LoadAllImages(images, callback)
 }
 
 InkSystem = (function(){
+  "strict";
   var inks = [];
   var inkTime = 0;
   var inkXOff = 0;
   var inkYOff = 0;
   var inkCount = 0;
 
-  function drawInks(ctx) {
+  function drawInks(ctx, elapsedTime) {
     var ii;
-    for (var ii = 0; ii < inks.length; ++ii) {
+    for (ii = 0; ii < inks.length; ++ii) {
       var ink = inks[ii];
-      if (ink.time > g_clock) {
+      if (g_clock < ink.time) {
         break;
       }
     }
     inks.splice(0, ii);
 
     if (inkTime < g_clock && inkCount > 0) {
-      inkTime = getTime() + INK_LEAK_DURATION / INK_COUNT;
+      inkTime = g_clock + INK_LEAK_DURATION / INK_COUNT;
       --inkCount;
       var octoInfo = OctopusControl.getInfo();
       birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
     }
 
     var alpha = ctx.globalAlpha;
+    var img = images.ink01.img;
     for (var ii = 0; ii < inks.length; ++ii) {
       var ink = inks[ii];
+      ink.rot += ink.rotVel * elapsedTime;
+      var lerp1to0 = (ink.time - g_clock) / INK_DURATION;
+      var scale = 1 + (1 - lerp1to0) * INK_SCALE;
       ctx.save();
-      ctx.translate(ink.x, ink,y);
+      ctx.translate(ink.x, ink.y);
 	  ctx.rotate(ink.rot);
-      ctx.globalAlpha = 1.0 - (ink.time - g_clock) / INK_DURATION;
-	  ctx.drawImage(images.ink01.img, 0, 0);
+      ctx.scale(scale, scale);
+      ctx.translate(img.width / -2, img.height / -2);
+      ctx.globalAlpha = lerp1to0;
+	  ctx.drawImage(img, 0, 0);
       ctx.restore();
     }
     canvas.globalAlpha = alpha;
@@ -452,15 +462,16 @@ InkSystem = (function(){
       x: x,
       y: y,
       rot: Math.random() * Math.PI * 2,
-      time: getTime() + INK_DURATION
+      rotVel: (Math.random() - 0.5) * Math.PI,
+      time: g_clock + INK_DURATION
     };
     inks.push(ink);
   }
 
   function startInk(x, y) {
-    intXOff = x;
-    intYOff = y;
-    intCount = INK_COUNT;
+    inkXOff = x;
+    inkYOff = y;
+    inkCount = INK_COUNT;
   }
 
   return {
