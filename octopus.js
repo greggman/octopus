@@ -8,6 +8,7 @@ var g_scrollX = 0;
 var g_scrollY = 0;
 var g_scrollIntX = 0;
 var g_scrollIntY = 0;
+var g_heightScale = 1;
 var g_obstacles = [];
 var g_inCollision = false;
 
@@ -15,9 +16,8 @@ var CAMERA_CHASE_SPEED = 0.2;
 var OCTOPUS_RADIUS = 100;
 
 function resizeCanvas() {
-  if (g_canvas.width != g_canvas.clientWidth ||
-      g_canvas.height != g_canvas.clientHeight) {
-    g_canvas.width = g_canvas.clientWidth;
+  if (g_canvas.height != g_canvas.clientHeight) {
+    g_canvas.width = 1024;
     g_canvas.height = g_canvas.clientHeight;
   }
 }
@@ -30,7 +30,11 @@ images =
 {
     urchin01:
     {
-        url: "images/urchin01.png"
+        url: "images/urchin1.png"
+    },
+    urchin02:
+    {
+        url: "images/urchin2.png"
     },
     background:
     {
@@ -74,7 +78,8 @@ var LegsInfo = [
 ];
 
 Obstacles = [
-  {name:"urchin01", radius: 150}
+  {name:"urchin01", radius: 150},
+  {name:"urchin02", radius: 150}
 ];
 
 function main() {
@@ -170,7 +175,7 @@ function drawBackground(ctx) {
   var imageWidth = img.width;
   var imageHeight = img.height;
   var tilesAcross = (g_canvas.width + imageWidth - 1) / imageWidth;
-  var tilesDown = (g_canvas.height + imageHeight - 1) / imageHeight;
+  var tilesDown = (Math.floor(g_canvas.height / g_heightScale) + imageHeight - 1) / imageHeight;
   var sx = Math.floor(g_scrollX);
   var sy = Math.floor(g_scrollY);
   if (sx < 0) {
@@ -212,6 +217,10 @@ function update(elapsedTime) {
   OctopusControl.update(elapsedTime);
   var octoInfo = OctopusControl.getInfo();
 
+  g_heightScale = g_canvas.clientWidth / g_canvas.width;
+  g_ctx.save();
+  g_ctx.scale(1, g_heightScale);
+
   var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
   var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
   g_scrollX += (targetX - g_scrollX) * CAMERA_CHASE_SPEED;
@@ -241,6 +250,8 @@ function update(elapsedTime) {
   // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
   drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   g_ctx.restore();
+
+  g_ctx.restore(); // for screen scale
 }
 
 function drawCircle(ctx, x, y, radius, color) {
