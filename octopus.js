@@ -147,7 +147,7 @@ function update(elapsedTime) {
   g_ctx.translate(octoInfo.x - g_scrollX, octoInfo.y - g_scrollY);
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
-  var legScrunches = [0, 10, 13, 5, 3, 7, 15, 10];
+  var legScrunches = [0, 3, 5, 7, 10, 12, 13, 15];
   drawLegs(15, legScrunches, g_ctx);
   drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
   // for (var ii = 0; ii < LegsInfo.length; ++ii) {
@@ -225,7 +225,8 @@ function drawLeg(baseX, baseY, rotation, scrunch, ctx)
 	base.x = base.x - scrunch;
 	ctx.save();
 	//draw another section
-	scrunchRotation = Math.sin(scrunch / images.legSegment2.img.height);
+	scrunchRotation = DotProduct(Normalize(baseX - images.legSegment2.img.width, baseY - images.legSegment2.img.height), 
+		Normalize(base.x - baseX, base.y - baseY));
 	ctx.rotate(scrunchRotation);
 	ctx.drawImage(images.legSegment2.img, base.x - scrunch, base.y);
 	base.y = base.y + images.legSegment2.img.height - combineJoints - scrunch;
@@ -238,6 +239,28 @@ function drawLeg(baseX, baseY, rotation, scrunch, ctx)
 	ctx.restore();
 	ctx.restore();
 	ctx.restore();
+	
+	//debug
+	// console.log(180 * (scrunchRotation / Math.PI));
+	// g_ctx.font = "12pt san-serif";
+	// g_ctx.fillStyle = "white";
+	// g_ctx.fillText(""+scrunchRotation, 10, 20);
+}
+
+function Normalize(dx, dy)
+{
+	var length = Math.sqrt(dx * dx + dy * dy);
+	if(length < 0.00000000001)
+	{
+		return {x: 0, y: 0};
+	}
+	console.log(dx/length + ", " + dy/length);
+	return {x: dx/length, y: dy/length};
+}
+
+function DotProduct(v1, v2)
+{
+	return v1.x * v2.x + v1.y * v2.y;
 }
 
 function drawOctopusBody(image, x, y, rotation, ctx)
