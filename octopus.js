@@ -222,6 +222,7 @@ function drawObstacles(ctx) {
 }
 
 legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
+legBackSwing = [false, false, false, false, false, false, false, false];
 
 function update(elapsedTime) {
   CheckCollisions();
@@ -252,7 +253,19 @@ function update(elapsedTime) {
 	//start leg animation
 	if(legInfo.upTime > g_clock)
 	{
+		// legMovement[ii] = 11;
+		legBackSwing[ii] = true;
+	}
+	//increment leg animation
+	if(legBackSwing[ii] == true)
+	{
+		legMovement[ii] = legMovement[ii] + 2;
+	}
+	//check to see if leg backswing is done
+	if(legMovement[ii] > 11)
+	{
 		legMovement[ii] = 11;
+		legBackSwing[ii] = false;
 	}
 	//decrement leg animation
 	if(legMovement[ii] > 0)
@@ -304,11 +317,11 @@ function drawLegs(scrunches, ctx)
 	for(var i = 0; i < 8; i++)
 	{
 		ctx.save();
-		//left legs
+		//right legs
 		if(i < 2)
 		{
-			ctx.rotate(90 * Math.PI / 180);
-			ctx.translate(15 + (-30) * i, 75);
+			ctx.rotate(270 * Math.PI / 180);
+			ctx.translate(0 + (-30) * i, 75);
 		}
 		//bottom legs
 		else if(i < 6)
@@ -316,11 +329,11 @@ function drawLegs(scrunches, ctx)
 			ctx.rotate(360 * Math.PI / 180);
 			ctx.translate(100 + (-30 * i), 35);
 		}
-		//right legs
+		//left legs
 		else
 		{
-			ctx.rotate(270 * Math.PI / 180);
-			ctx.translate(175 - (30 * i), 75);
+			ctx.rotate(90 * Math.PI / 180);
+			ctx.translate(195 - (30 * i), 75);
 		}
 		drawLeg(0, 0, scrunches[i], ctx);
 		ctx.restore();
@@ -348,22 +361,6 @@ function drawLeg(baseX, baseY, scrunch, ctx)
     ctx.drawImage(images.legTip.img, 0, 0);
 	ctx.restore();
     return;
-}
-
-function Normalize(dx, dy)
-{
-	var length = Math.sqrt(dx * dx + dy * dy);
-	if(length < 0.00000000001)
-	{
-		return {x: 0, y: 0};
-	}
-	console.log(dx/length + ", " + dy/length);
-	return {x: dx/length, y: dy/length};
-}
-
-function DotProduct(v1, v2)
-{
-	return v1.x * v2.x + v1.y * v2.y;
 }
 
 function drawOctopusBody(image, x, y, rotation, ctx)
