@@ -10,6 +10,7 @@ var g_scrollIntX = 0;
 var g_scrollIntY = 0;
 var g_heightScale = 1;
 var g_obstacles = [];
+var g_collectibles = [];
 var g_inCollision = false;
 
 var LEVEL_WIDTH = 1024;
@@ -42,7 +43,7 @@ images =
         url: "images/urchin2.png"
     },
     ink01: {
-        url: "images/octopus-ink.png"
+        url: "images/inkdrop.png"
     },
     background:
     {
@@ -74,7 +75,7 @@ images =
 	},
 	collectible:
 	{
-		url: "images/octopus_leg3.png"
+		url: "images/inkdrop.png"
 	}
 };
 
@@ -149,14 +150,27 @@ function MakeObstacle(type, x, y) {
   g_obstacles.push(obj);
 };
 
+function MakeCollectible(x, y)
+{
+	var obj = 
+	{
+		x: x,
+		y: y
+	};
+	g_collectibles.push(obj);
+}
+
 function MakeLevel() {
   var y = g_canvas.height;
   var width = g_canvas.width * 0.8;
   var xOff = Math.floor((g_canvas.width - width) * 0.5);
   for (var ii = 0; ii < 100; ++ii) {
+	//make obstacle
     var x = xOff + pseudoRandInt(g_canvas.width);
     MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
     y += g_canvas.height;
+	//make collectible
+	MakeCollectible(pseudoRandInt(g_canvas.width), y);
   }
 }
 
@@ -181,6 +195,25 @@ function CheckCollisions() {
       break;
     }
   }
+}
+
+function CheckCollection()
+{
+	var octoInfo = OctopusControl.getInfo();
+	for(var ii = 0; ii < g_collectibles.length; ii++)
+	{
+		var obj = g_collectibles[ii];
+		var dx = obj.x - octoInfo.x;
+		var dy = obj.y - octoinfo.y;
+		var rad = obj.type.radius + OCTOPUS_RADIUS;
+		var radSq = rad * rad;
+		var distSq = dx * dx + dy * dy;
+		
+		if(distSq < radSq)
+		{
+			//collect stuffs!
+		}
+	}
 }
 
 function drawBackground(ctx) {
@@ -225,6 +258,22 @@ function drawObstacles(ctx) {
   ctx.restore();
 }
 
+function drawCollectibles(ctx)
+{
+	ctx.save();
+	ctx.translate(-g_scrollIntX, -g_scrollIntY);
+	for(var i = 0; i < g_collectibles.length; i++)
+	{
+		var obj = g_collectibles[i];
+		var img = images.collectible.img;
+		ctx.drawImage(
+			img,
+			obj.x - Math.floor(img.width / 2),
+			obj.y - Math.floor(img.height / 2));
+	}
+	ctx.restore();
+}
+
 legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 legBackSwing = [false, false, false, false, false, false, false, false];
 
@@ -245,6 +294,7 @@ function update(elapsedTime) {
   g_scrollIntY = Math.floor(g_scrollY);
   drawBackground(g_ctx);
   drawObstacles(g_ctx);
+  drawCollectibles(g_ctx);
 
   g_ctx.save();
   g_ctx.translate(octoInfo.x - g_scrollIntX, octoInfo.y - g_scrollIntY);
@@ -285,8 +335,6 @@ function update(elapsedTime) {
                // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
     // g_ctx.restore();
   }
-  //draw collectibles
-  drawItem(images.collectible, 100, 200, 0, g_ctx);
   // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
   //drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
