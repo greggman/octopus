@@ -491,6 +491,11 @@ function update(elapsedTime) {
     OctopusControl.update(elapsedTime);
   }
   var octoInfo = OctopusControl.getInfo();
+  
+  //track score
+  DistanceTraveled += octoInfo.y - PrevPos.y;
+  PrevPos.x = octoInfo.x;
+  PrevPos.y = octoInfo.y;
 
   g_ctx.save();
 
@@ -642,6 +647,7 @@ function update(elapsedTime) {
 	//display ending splash screen
 	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 2);
 	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 2 + 150);
+	g_ctx.fillText("You reached "+DistanceTraveled+" before exploding!", 10, g_canvas.height / 2 + 300);
   }
   g_ctx.restore(); // for screen scale
 }
