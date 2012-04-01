@@ -36,15 +36,15 @@ images =
     },
 	bodyHappy:
 	{
-		url: "images/octopus_body.png"
+		url: "images/octopus_body_yay.png"
 	},
 	bodyNormal:
 	{
 		url: "images/octopus_body.png"
 	},
-	bodyDerp:
+	bodyOw:
 	{
-		url: "images/octopus_body.png"
+		url: "images/octopus_body_ow.png"
 	},
 	legTip:
 	{
@@ -57,6 +57,10 @@ images =
 	legSegment2:
 	{
 		url: "images/octopus_leg2.png"
+	},
+	collectible:
+	{
+		url: "images/octopus_leg3.png"
 	}
 };
 
@@ -207,7 +211,7 @@ function update(elapsedTime) {
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawLegs(legMovement, g_ctx);
-  drawOctopusBody(images.bodyNormal, 0, 0, octoInfo.rotation, g_ctx);
+  drawOctopusBody(images.bodyNormal, 0, 0, 0, g_ctx);
   for (var ii = 0; ii < LegsInfo.length; ++ii) {
 	var legInfo = LegsInfo[ii];
 	//start leg animation
@@ -241,8 +245,9 @@ function update(elapsedTime) {
                // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
     // g_ctx.restore();
   }
-  // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
-  // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
+  //draw collectibles
+  drawItem(images.collectible, 100, 200, 0, g_ctx);
+  
   g_ctx.restore();
 }
 
@@ -322,7 +327,7 @@ function drawOctopusBody(image, x, y, rotation, ctx)
 function drawItem(image, x, y, rotation, ctx)
 {
 	ctx.save();
-//	ctx.rotate(rotation);
+	ctx.rotate(rotation);
 	ctx.drawImage(image.img, x, y);
 	ctx.restore();
 }
