@@ -163,6 +163,11 @@ images =
 		url: "images/inkbottle_full .png"
 	}
 };
+var expression = 
+{
+	img: images.bodyNormal,
+	timer: 0
+};
 
 var LegsInfo = [
 { scrunchDir: -1, xOff:  0, yOff:  80, radius: 90, rotAccelInDeg: -20, rotationInDeg: 270 - 15 },
@@ -256,7 +261,8 @@ function MakeCollectible(x, y, radius)
 	{
 		x: x,
 		y: y,
-		radius: radius
+		radius: radius,
+		isCollected: false
 	};
 	g_collectibles.push(obj);
 }
@@ -271,7 +277,7 @@ function MakeLevel() {
     MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
     y += g_canvas.height * 0.24;
 	//make collectible
-	MakeCollectible(pseudoRandInt(g_canvas.width), y, 150);
+	MakeCollectible(pseudoRandInt(g_canvas.width), y, images.collectible.img.width * .5);
   }
 }
 
@@ -295,6 +301,9 @@ function CheckCollisions() {
       InkSystem.startInk(dx / 2, dy / 2);
       audio.play_sound('ouch');
 	  health = health - 3;//take damage
+	  //change expression
+	  expression.img = images.bodyOw;
+	  expression.timer = 35;
       break;
     }
   }
@@ -313,15 +322,19 @@ function CheckCollection()
 		var radSq = rad * rad;
 		var distSq = dx * dx + dy * dy;
 		
-		if(distSq < radSq)
+		if(distSq < radSq && !obj.isCollected)
 		{
 			//collect stuffs!
-			// health++;//get healed a little
+			obj.isCollected = true;
+			health++;//get healed a little
 			if(health > 9)
 			{
 				health = 9;
 			}
 			itemsToRemove.push(ii);
+			//change expression
+			expression.img = images.bodyHappy;
+			expression.timer = 35;
 		}
 	}
 	//remove collected items
@@ -411,18 +424,24 @@ function drawObstacles(ctx) {
 
 function drawCollectibles(ctx)
 {
-	ctx.save();
-	ctx.translate(-g_scrollIntX, -g_scrollIntY);
 	for(var i = 0; i < g_collectibles.length; i++)
 	{
 		var obj = g_collectibles[i];
-		var img = images.collectible.img;
-		ctx.drawImage(
-			img,
-			obj.x - Math.floor(img.width / 2),
-			obj.y - Math.floor(img.height / 2));
+		if(!obj.isCollected)
+		{
+			ctx.save();
+			var img = images.collectible.img;
+			ctx.drawImage(
+				img,
+				obj.x - Math.floor(img.width / 2),
+				obj.y - Math.floor(img.height / 2));
+			if (OPTIONS.debug) {
+				drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
+			}
+			ctx.restore();
+		}
 	}
-	ctx.restore();
+	
 }
 
 legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -510,7 +529,17 @@ function update(elapsedTime) {
   g_ctx.rotate(octoInfo.rotation);
   // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
   drawLegs(legMovement, g_ctx);
-  drawOctopusBody(images.bodyNormal, 0, 0, 0, g_ctx);
+  drawOctopusBody(expression.img, 0, 0, 0, g_ctx);
+  //change expression
+  if(expression.timer > 0)
+  {
+	expression.timer--;
+  }
+  else
+  {
+	expression.timer = 0;
+	expression.img = images.bodyNormal;
+  }
   for (var ii = 0; ii < LegsInfo.length; ++ii) {
 	var legInfo = LegsInfo[ii];
 	//start leg animation
