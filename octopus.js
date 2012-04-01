@@ -333,9 +333,13 @@ function drawObstacles(ctx) {
     var scale = 0.9 + Math.sin((g_clock + ii) * 4) * 0.05;
     ctx.translate(obj.x, obj.y);
     ctx.scale(scale, scale);
+    ctx.save();
     ctx.translate(-Math.floor(img.width / 2), -Math.floor(img.height / 2));
     ctx.drawImage(img, 0, 0);
-    //drawCircleLine(ctx, obj.x, obj.y, obj.type.radius, "white");
+    ctx.restore();
+    if (OPTIONS.debug) {
+      drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
+    }
     ctx.restore();
   }
 }
@@ -474,7 +478,9 @@ function update(elapsedTime) {
   }
   // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
   // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
-  //drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+  if (OPTIONS.debug) {
+    drawCircleLine(g_ctx, 0, 0, OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+  }
   g_ctx.restore();
 
   InkSystem.drawInks(g_ctx, elapsedTime);
