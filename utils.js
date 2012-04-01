@@ -1,3 +1,36 @@
+
+$ = function(id) {
+  return document.getElementById(id);
+}
+
+var getURLOptions = function(obj) {
+  var s = window.location.href;
+  var q = s.indexOf("?");
+  var e = s.indexOf("#");
+  if (e < 0) {
+    e = s.length;
+  }
+  var query = s.substring(q + 1, e);
+  var pairs = query.split("&");
+  for (var ii = 0; ii < pairs.length; ++ii) {
+    var keyValue = pairs[ii].split("=");
+    var key = keyValue[0];
+    var value = decodeURIComponent(keyValue[1]);
+    try {
+      value = parseFloat(value);
+    } catch (e) {
+    }
+    obj[key] = value;
+  }
+};
+
+function log(msg) {
+  if (window.console && window.console.log) {
+    window.console.log(msg);
+  }
+}
+
+
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){
   return  window.requestAnimationFrame       ||
