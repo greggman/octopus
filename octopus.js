@@ -424,6 +424,9 @@ function drawBackground(ctx) {
   sx = sx % imageWidth;
   sy = sy % imageHeight;
 
+  tilesDown = Math.min(100, tilesDown);
+  tilesAcross = Math.min(100, tilesDown);
+
   ctx.save();
   ctx.translate(-sx, -sy);
   for (var yy = -1; yy < tilesDown; ++yy) {
