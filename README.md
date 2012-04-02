@@ -27,7 +27,7 @@ iPads or notebooks. To do this you need to have <a href="http://nodejs.org">node
 
     for osx <a href="http://kb.wisc.edu/page.php?id=6526">see here</a>.
 
-    for windows <a href="http://grok.lsu.edu/article.aspx?articleid=1277>see here</a>.
+    for windows <a href="http://grok.lsu.edu/article.aspx?articleid=1277">see here</a>.
 
     for linux you probably already know.
 
