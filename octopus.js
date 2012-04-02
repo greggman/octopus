@@ -220,14 +220,6 @@ function main() {
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
 
-  if (false) {
-    var mySound = new buzz.sound( "sounds/octopus", {
-        formats: [ "ogg", "m4a", "wav" ]
-    });
-
-    mySound.play().loop();
-  }
-
   if (true) {
    g_bgm = $('bgm');
    g_bgm.addEventListener('ended', function() {
