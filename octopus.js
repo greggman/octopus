@@ -41,7 +41,7 @@ var OPTIONS = {
   LEG_ACCELERATION: 60,
   LEG_UP_DURATION: 0.8,
   SHOOT_BACK_VELOCITY: -500,
-  URCHIN_SCALE1: .6,
+  URCHIN_SCALE1: .5,
   URCHIN_SCALE2: .8,
   COLLECTIBLE_SCALE: .5,
   URCHIN_SPAWN_RATE: .24,
@@ -185,8 +185,8 @@ var LegsInfo = [
 ];
 
 Obstacles = [
-  {name:"urchin01", radius: 125, scale: .4},//150 original
-  {name:"urchin02", radius: 125, scale: .8}//scale should be .4 and .8
+  {name:"urchin01", radius: 125, scale: OPTIONS.URCHIN_SCALE1},//150 original
+  {name:"urchin02", radius: 125, scale: OPTIONS.URCHIN_SCALE2}//scale should be .4 and .8
 ];
 
 Sounds = {
@@ -716,9 +716,8 @@ function update(elapsedTime) {
     drawImageCentered(g_ctx, images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
 	break;
   case 'tutorial':
-	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
+	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 4);
 	break;
->>>>>>> 4ab9c91d9e122c29ab7c986ecf5db349249afb06
   }
 
   g_ctx.restore(); // for screen scale
