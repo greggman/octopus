@@ -31,6 +31,7 @@ audio {
 }
 </style>
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="buzz.js"></script>
 <script type="text/javascript" src="utils.js"></script>
 <script type="text/javascript" src="audio.js"></script>
 <script type="text/javascript" src="input.js"></script>
@@ -43,7 +44,9 @@ audio {
 </div>
 <div id="online">
 <div id="onlinestatus">disconnected</div>
-<audio id="bgm" src="sounds/octopus.m4a" autoplay loop></audio>
+<!--
+  <audio id="bgm" src="sounds/octopus.m4a" preload autoplay loop controls></audio>
+-->
 </div>
 </body>
 </html>

@@ -2,6 +2,7 @@ InputSystem = (function(){
   var eventQueue = [];
   var MAX_EVENT_TIME = 0.2;
   var listeners = {};
+  var active = false;
 
   /*
 
@@ -29,6 +30,9 @@ InputSystem = (function(){
   }, false);
 
   function addEvent(direction) {
+    if (!active) {
+      return;
+    }
     var event = {
       direction: direction,
       time: g_clock
@@ -65,9 +69,19 @@ InputSystem = (function(){
     list.push(listener);
   }
 
+  function startInput() {
+    active = true;
+  }
+
+  function stopInput() {
+    active = false;
+  }
+
   return {
     addEventListener: addEventListener,
     addEvent: addEvent,
+    startInput: startInput,
+    stopInput: stopInput,
 
     dummy: undefined  // marks end
   }
