@@ -33,10 +33,12 @@ iPads or notebooks. To do this you need to have <a href="http://nodejs.org">node
 
 6. Make sure each phone is on the same WiFi.
 
-7. On each phone, go to http://addressofserver:8080/play.html
+7. On each phone, open a browser and go to http://addressofserver:8080/play.html
 
-8. In the top left corner it will show how many people have connected. Once they are connected click
-   the mouse on the main machine to start the game.
+   For example my address looks like http://192.168.1.73:8080/play.html
+
+8. In the top left corner of the game it will show how many people have connected.
+   Once they are connected click the mouse on the main machine to start the game.
 
    You probably need at least 4 people to be able to control the octopus.
 
