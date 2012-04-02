@@ -39,10 +39,10 @@ var OPTIONS = {
   LEG_ACCELERATION: 60,
   LEG_UP_DURATION: 0.8,
   SHOOT_BACK_VELOCITY: -500,
-  URCHIN_SCALE1: .4,
+  URCHIN_SCALE1: .6,
   URCHIN_SCALE2: .8,
   COLLECTIBLE_SCALE: .5,
-  
+  URCHIN_SPAWN_RATE: .24,
 };
 
 getURLOptions(OPTIONS);
@@ -282,9 +282,13 @@ function MakeLevel() {
 	//make obstacle
     var x = xOff + pseudoRandInt(g_canvas.width);
     MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
-    y += g_canvas.height * 0.24;
+	OPTIONS.URCHIN_SPAWN_RATE -= .001;
+    y += g_canvas.height * OPTIONS.URCHIN_SPAWN_RATE;
 	//make collectible
-	MakeCollectible(pseudoRandInt(g_canvas.width), y, images.collectible.img.width * .5);
+	if(ii % 2 == 0)
+	{
+		MakeCollectible(pseudoRandInt(g_canvas.width), y + 33, images.collectible.img.width * .5);//
+	}
   }
 }
 
@@ -493,7 +497,7 @@ function update(elapsedTime) {
   var octoInfo = OctopusControl.getInfo();
   
   //track score
-  DistanceTraveled += octoInfo.y - PrevPos.y;
+  DistanceTraveled += ((octoInfo.y - PrevPos.y) / 10) | 0;
   PrevPos.x = octoInfo.x;
   PrevPos.y = octoInfo.y;
 
@@ -645,9 +649,12 @@ function update(elapsedTime) {
   if(HasLost)
   {
 	//display ending splash screen
-	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 2);
-	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 2 + 150);
-	g_ctx.fillText("You reached "+DistanceTraveled+" before exploding!", 10, g_canvas.height / 2 + 300);
+	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 4);
+	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 4 + 150);
+	g_ctx.font = "20pt monospace";
+    g_ctx.fillStyle = "white";
+	g_ctx.fillText("You crawled "+DistanceTraveled+" tentacles before exploding!", 
+		g_canvas.width / 4.6, g_canvas.height / 5 + 300);
   }
   g_ctx.restore(); // for screen scale
 }
