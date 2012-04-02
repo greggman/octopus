@@ -21,6 +21,7 @@ var g_baseScale = 1;
 var g_obstacles = [];
 var g_collectibles = [];
 var g_inCollision = false;
+var g_oldCollision = false;
 var g_printMsgs = [];
 var g_gameState = 'title';
 var OPTIONS = {
@@ -317,6 +318,7 @@ function MakeLevel() {
 }
 
 function CheckCollisions() {
+  g_oldCollision = g_inCollision;
   g_inCollision = false;
   var octoInfo = OctopusControl.getInfo();
   for (var ii = 0; ii < g_obstacles.length; ++ii) {
@@ -332,14 +334,16 @@ function CheckCollisions() {
     //g_ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
     if (distSq < radSq && g_gameState == "play") {
       g_inCollision = true;
-      OctopusControl.shootBack(obj);
-      InkSystem.startInk(dx / 2, dy / 2);
-      audio.play_sound('ouch');
-      audio.play_sound('urchin');
-	  health = health - 3;//take damage
-	  //change expression
-	  expression.img = images.bodyOw;
-	  expression.timer = 35;
+      if (!g_oldCollision) {
+        OctopusControl.shootBack(obj);
+        InkSystem.startInk(dx / 2, dy / 2);
+        audio.play_sound('ouch');
+        audio.play_sound('urchin');
+        health = health - 3;//take damage
+        //change expression
+        expression.img = images.bodyOw;
+        expression.timer = 35;
+      }
       break;
     }
   }
