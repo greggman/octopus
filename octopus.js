@@ -696,12 +696,12 @@ function update(elapsedTime) {
   if(HasLost)
   {
 	//display ending splash screen
-	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 3);
-	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 3 + 150);
+	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 5);
+	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 5 + 150);
 	g_ctx.font = "20pt monospace";
     g_ctx.fillStyle = "white";
 	g_ctx.fillText("You crawled "+DistanceTraveled+" tentacles before exploding!", 
-		g_canvas.width / 4.6, g_canvas.height / 5 + 300);
+		g_canvas.width / 4.6, g_canvas.height / 3 + 100);
   }
 
   switch (g_gameState) {
@@ -716,7 +716,7 @@ function update(elapsedTime) {
     drawImageCentered(g_ctx, images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
 	break;
   case 'tutorial':
-	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
+	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 4);
 	break;
   }
 
