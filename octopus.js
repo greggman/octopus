@@ -330,7 +330,7 @@ function CheckCollisions() {
     var radSq = rad * rad;
     var distSq = dx * dx + dy * dy;
     //g_ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
-    if (distSq < radSq) {
+    if (distSq < radSq && g_gameState == "play") {
       g_inCollision = true;
       OctopusControl.shootBack(obj);
       InkSystem.startInk(dx / 2, dy / 2);
@@ -720,7 +720,7 @@ function update(elapsedTime) {
     drawImageCentered(g_ctx, images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
 	break;
   case 'tutorial':
-	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 4);
+	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
 	break;
   }
 
