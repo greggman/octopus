@@ -10,6 +10,7 @@ var health = 9;
 var g_canvas;
 var g_ctx;
 var g_clock = 0;
+var g_bgm;
 // World scroll position.
 var g_scrollX = 0;
 var g_scrollY = 0;
@@ -21,6 +22,7 @@ var g_obstacles = [];
 var g_collectibles = [];
 var g_inCollision = false;
 var g_printMsgs = [];
+var g_gameState = 'title';
 var OPTIONS = {
   LEG_SCRUNCH: 11,
   LEG_SCRUNCH_SPEED: 90,
@@ -151,6 +153,18 @@ images =
 	outOfInk:
 	{
 		url: "images/OutofInk.png"
+	},
+	title:
+	{
+		url: "images/title.png"
+	},
+	tutorial:
+	{
+		url: "images/tutorial.png"
+	},
+	play:
+	{
+		url: "images/playbutton.png"
 	}
 };
 var expression = 
@@ -205,12 +219,18 @@ function main() {
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
 
-  var bgm = $("bgm");
-  bgm.addEventListener('ended', function() {
-	  this.currentTime = 0;
-	  this.play();
-  }, false);
+  var mySound = new buzz.sound( "sounds/octopus", {
+	  formats: [ "ogg", "m4a", "wav" ]
+  });
 
+  mySound.play().loop();
+
+ // g_bgm = $('bgm');
+ // g_bgm.addEventListener('ended', function() {
+ //     log("replay");
+ //     this.currentTime = 0;
+ //     this.play();
+ // }, false);
   audio.init(Sounds);
 
   OctopusControl.setLegs(LegsInfo);
@@ -388,6 +408,8 @@ function drawImageCentered(ctx, img, x, y) {
   ctx.save();
   ctx.translate(x, y);
   ctx.translate(-img.width * 0.5, -img.height * 0.5);
+  //ctx.fillStyle = "purple";
+  //ctx.fillRect(0, 0, img.width, img.height);
   ctx.drawImage(img, 0, 0);
   ctx.restore();
 }
@@ -470,21 +492,39 @@ function drawCollectibles(ctx)
 
 legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 legBackSwing = [false, false, false, false, false, false, false, false];
+g_debounceTimer = 0;
 
 function update(elapsedTime) {
-
+	print("");
 	//allow play again if the octopus is dead
 	window.addEventListener('click', function(event) 
 	{
-		if(HasLost)
-		{
-			window.location = window.location;
+		if (g_clock < g_debounceTimer) {
+		  return;
 		}
-	})
+
+		g_debounceTimer = g_clock + 0.5;
+		switch (g_gameState) {
+		case 'title':
+		  g_gameState = 'tutorial';
+		  break;
+		case 'tutorial':
+		  g_gameState = 'play';
+		  InputSystem.startInput();
+		  break;
+		case 'play':
+		  break;
+		case 'gameover':
+		  window.location = window.location;
+		  break;
+		}
+	});
 	//check losing state
 	if(health <= 0)
 	{
+		InputSystem.stopInput();
 		HasLost = true;
+		g_gameState = 'gameover';
 	}
 
   CheckCollisions();
@@ -557,6 +597,8 @@ function update(elapsedTime) {
   g_scrollIntX = Math.floor(g_scrollX);
   g_scrollIntY = Math.floor(g_scrollY);
   drawBackground(g_ctx);
+
+  if (g_gameState == "play" || g_gameState == "gameover") {
 
   g_ctx.save();
   g_ctx.translate(-g_scrollIntX, -g_scrollIntY);
@@ -645,18 +687,42 @@ function update(elapsedTime) {
 
   InkSystem.drawInks(g_ctx, elapsedTime);
   g_ctx.restore(); // scroll
-  drawHealthHUD(20, 20, g_ctx);//hud should follow octo translate but not rotation
+
+  } // endif g_gamestate
+
+  if (g_gameState == "play" || g_gameState == "gameover") {
+	drawHealthHUD(20, 20, g_ctx);//hud should follow octo translate but not rotation
+  }
   if(HasLost)
   {
 	//display ending splash screen
-	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 4);
-	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 4 + 150);
+	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 3);
+	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 3 + 150);
 	g_ctx.font = "20pt monospace";
     g_ctx.fillStyle = "white";
 	g_ctx.fillText("You crawled "+DistanceTraveled+" tentacles before exploding!", 
 		g_canvas.width / 4.6, g_canvas.height / 5 + 300);
   }
+
+  switch (g_gameState) {
+  case 'title':
+	var h = g_canvas.height * 0.5 - (images.title.img.height + images.play.img.height) * 0.5;
+	h /= g_heightScale;
+	var h = g_canvas.height * 0.5 / g_heightScale;
+	print("")
+	print("gs:" + g_heightScale);
+	print("h:" + h);
+	drawImageCentered(g_ctx, images.title.img, g_canvas.width / 2, g_canvas.height / 4);
+    drawImageCentered(g_ctx, images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
+	break;
+  case 'tutorial':
+	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
+	break;
+>>>>>>> 4ab9c91d9e122c29ab7c986ecf5db349249afb06
+  }
+
   g_ctx.restore(); // for screen scale
+
 }
 
 function drawCircle(ctx, x, y, radius, color) {
