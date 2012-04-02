@@ -242,7 +242,7 @@ function main() {
     then = now;
     g_clock += elapsedTime;
 
-    update(elapsedTime);
+    update(elapsedTime, g_ctx);
     drawPrint(g_ctx);
 
     requestId = requestAnimFrame(mainLoop, g_canvas);
@@ -250,7 +250,7 @@ function main() {
 
   function resize() {
     resizeCanvas();
-    update(0.0001);
+    update(0.0001, g_ctx);
   }
 
   function pauseGame() {
@@ -317,13 +317,13 @@ function CheckCollisions() {
     var obj = g_obstacles[ii];
     var dx = obj.x - octoInfo.x;
     var dy = obj.y - octoInfo.y;
-    //g_ctx.font = "12pt monospace";
-    //g_ctx.fillStyle = "white";
-    //g_ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
+    //ctx.font = "12pt monospace";
+    //ctx.fillStyle = "white";
+    //ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
     var rad = obj.type.radius * obj.type.scale + OPTIONS.OCTOPUS_RADIUS;
     var radSq = rad * rad;
     var distSq = dx * dx + dy * dy;
-    //g_ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
+    //ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
     if (distSq < radSq && g_gameState == "play") {
       g_inCollision = true;
       if (!g_oldCollision) {
@@ -494,7 +494,7 @@ legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 legBackSwing = [false, false, false, false, false, false, false, false];
 g_debounceTimer = 0;
 
-function update(elapsedTime) {
+function update(elapsedTime, ctx) {
 	print("");
 	//allow play again if the octopus is dead
 	window.addEventListener('click', handleClick);
@@ -545,7 +545,7 @@ function update(elapsedTime) {
   PrevPos.x = octoInfo.x;
   PrevPos.y = octoInfo.y;
 
-  g_ctx.save();
+  ctx.save();
 
   if (OPTIONS.battle) {
     var otherX = 512;
@@ -585,7 +585,7 @@ function update(elapsedTime) {
     g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
     g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
 
-    g_ctx.scale(g_baseScale, g_baseScale * g_heightScale);
+    ctx.scale(g_baseScale, g_baseScale * g_heightScale);
   } else {
     var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
     var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
@@ -594,50 +594,50 @@ function update(elapsedTime) {
     g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
 
     g_heightScale = g_canvas.clientWidth / g_canvas.width;
-    g_ctx.scale(1, g_heightScale);
+    ctx.scale(1, g_heightScale);
   }
 
 
   g_scrollIntX = Math.floor(g_scrollX);
   g_scrollIntY = Math.floor(g_scrollY);
-  drawBackground(g_ctx);
+  drawBackground(ctx);
 
   if (g_gameState == "play" || g_gameState == "gameover") {
 
-  g_ctx.save();
-  g_ctx.translate(-g_scrollIntX, -g_scrollIntY);
+  ctx.save();
+  ctx.translate(-g_scrollIntX, -g_scrollIntY);
 
   if (OPTIONS.battle && OPTIONS.debug) {
-    drawCircle(g_ctx, otherX, otherY, 10, "yellow");
-    drawCircle(g_ctx, centerX, centerY, 5, "green");
+    drawCircle(ctx, otherX, otherY, 10, "yellow");
+    drawCircle(ctx, centerX, centerY, 5, "green");
   }
 
-  drawObstacles(g_ctx);
-  drawCollectibles(g_ctx);
+  drawObstacles(ctx);
+  drawCollectibles(ctx);
 
-  g_ctx.save();
-  g_ctx.translate(0, octoInfo.y);
-  g_ctx.translate(octoInfo.x, 0);
-  g_ctx.rotate(octoInfo.rotation);
+  ctx.save();
+  ctx.translate(0, octoInfo.y);
+  ctx.translate(octoInfo.x, 0);
+  ctx.rotate(octoInfo.rotation);
   
-  // drawCircle(g_ctx, 0, 0, 100, "rgb(200,0,255)");
+  // drawCircle(ctx, 0, 0, 100, "rgb(200,0,255)");
   // only follow the octopus if you haven't yet lost
   if(HasLost)
   {
 	//make the octopus fly up
-	drawLegs(legMovement, g_ctx);
-	drawOctopusBody(expression.img, 0, -deathAnimDistance, 0, g_ctx);
+	drawLegs(legMovement, ctx);
+	drawOctopusBody(expression.img, 0, -deathAnimDistance, 0, ctx);
 	if(deathAnimDistance < 500)
 	{
 		deathAnimDistance = deathAnimDistance + 4;
 	}
 	expression.timer = 100;
-	g_ctx.restore();
+	ctx.restore();
   }
   else
   {
-	  drawLegs(legMovement, g_ctx);
-	  drawOctopusBody(expression.img, 0, 0, 0, g_ctx);
+	  drawLegs(legMovement, ctx);
+	  drawOctopusBody(expression.img, 0, 0, 0, ctx);
   }
   //change expression
   if(expression.timer > 0)
@@ -674,37 +674,37 @@ function update(elapsedTime) {
 		legMovement[ii] -= OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime;
 	}
     // var legInfo = LegsInfo[ii];
-    // g_ctx.save();
-    // g_ctx.rotate(legInfo.rotation);
-	// g_ctx.translate(0, 100);
-	// // drawLeg(0, 0, 15, g_ctx);
-    // drawCircle(g_ctx, 0, 0, 15,
+    // ctx.save();
+    // ctx.rotate(legInfo.rotation);
+	// ctx.translate(0, 100);
+	// // drawLeg(0, 0, 15, ctx);
+    // drawCircle(ctx, 0, 0, 15,
                // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
-    // g_ctx.restore();
+    // ctx.restore();
   }
-  // drawCircle(g_ctx, 0, 80, 10, "rgb(255,255,255)");
-  // drawCircle(g_ctx, 0, 82, 5, "rgb(0,0,0)");
+  // drawCircle(ctx, 0, 80, 10, "rgb(255,255,255)");
+  // drawCircle(ctx, 0, 82, 5, "rgb(0,0,0)");
   if (OPTIONS.debug) {
-    drawCircleLine(g_ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+    drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
   }
-  g_ctx.restore();
+  ctx.restore();
 
-  InkSystem.drawInks(g_ctx, elapsedTime);
-  g_ctx.restore(); // scroll
+  InkSystem.drawInks(ctx, elapsedTime);
+  ctx.restore(); // scroll
 
   } // endif g_gamestate
 
   if (g_gameState == "play" || g_gameState == "gameover") {
-	drawHealthHUD(20, 20, g_ctx);//hud should follow octo translate but not rotation
+	drawHealthHUD(20, 20, ctx);//hud should follow octo translate but not rotation
   }
   if(HasLost)
   {
 	//display ending splash screen
-	drawImageCentered(g_ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 5);
-	drawImageCentered(g_ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 5 + 150);
-	g_ctx.font = "20pt monospace";
-    g_ctx.fillStyle = "white";
-	g_ctx.fillText("You crawled "+DistanceTraveled+" tentacles before exploding!", 
+	drawImageCentered(ctx, images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 5);
+	drawImageCentered(ctx, images.playAgain.img, g_canvas.width / 2, g_canvas.height / 5 + 150);
+	ctx.font = "20pt monospace";
+    ctx.fillStyle = "white";
+	ctx.fillText("You crawled "+DistanceTraveled+" tentacles before exploding!",
 		g_canvas.width / 4.6, g_canvas.height / 3 + 100);
   }
 
@@ -716,15 +716,15 @@ function update(elapsedTime) {
 	print("")
 	print("gs:" + g_heightScale);
 	print("h:" + h);
-	drawImageCentered(g_ctx, images.title.img, g_canvas.width / 2, g_canvas.height / 4);
-    drawImageCentered(g_ctx, images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
+	drawImageCentered(ctx, images.title.img, g_canvas.width / 2, g_canvas.height / 4);
+    drawImageCentered(ctx, images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
 	break;
   case 'tutorial':
-	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
+	drawImageCentered(ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
 	break;
   }
 
-  g_ctx.restore(); // for screen scale
+  ctx.restore(); // for screen scale
 
 }
 
@@ -922,7 +922,7 @@ InkSystem = (function(){
 	  ctx.drawImage(img, 0, 0);
       ctx.restore();
     }
-    canvas.globalAlpha = alpha;
+    g_canvas.globalAlpha = alpha;
   }
 
   var inkImages = [

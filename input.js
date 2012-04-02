@@ -17,7 +17,11 @@ InputSystem = (function(){
 
 
   window.addEventListener('keypress', function(event) {
-    switch (String.fromCharCode(event.keyCode).toLowerCase()) {
+    var c = event.keyCode;
+    if (!c) {
+      c = event.charCode;
+    }
+    switch (String.fromCharCode(c).toLowerCase()) {
     case '8': addEvent(0); break;
     case 'p': addEvent(1); break;
     case 'm': addEvent(2); break;
