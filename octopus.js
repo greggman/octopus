@@ -716,7 +716,7 @@ function update(elapsedTime) {
     drawImageCentered(g_ctx, images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
 	break;
   case 'tutorial':
-	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 4);
+	drawImageCentered(g_ctx, images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
 	break;
   }
 
