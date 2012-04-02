@@ -505,7 +505,10 @@ g_debounceTimer = 0;
 function update(elapsedTime) {
 	print("");
 	//allow play again if the octopus is dead
-	window.addEventListener('click', function(event) 
+	window.addEventListener('click', handleClick);
+    window.addEventListener('touchstart', handleClick);
+
+    function handleClick(event)
 	{
 		if (g_clock < g_debounceTimer) {
 		  return;
@@ -526,7 +529,8 @@ function update(elapsedTime) {
 		  window.location = window.location;
 		  break;
 		}
-	});
+	}
+
 	//check losing state
 	if(health <= 0)
 	{
