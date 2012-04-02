@@ -125,12 +125,23 @@ function Player(slotId) {
   this.slotId = slotId;
 }
 
+g_slotRemap = [
+  5,
+  2,
+  7,
+  0,
+  6,
+  1,
+  4,
+  3
+];
+
 Player.prototype.update = function(msg) {
   log("player slot:" + this.slotId + ", msg");
   switch (msg.cmd) {
   case 'press':
     if (this.slotId < 8) {
-      InputSystem.addEvent(this.slotId);
+      InputSystem.addEvent(g_slotRemap[this.slotId]);
     }
     break;
   }
