@@ -6,7 +6,7 @@ Octopi-Everything is an 8 player game developed by during the first
 
 The game can be played on a single computer with 8 players, each one taking a key.
 
-<a href="octopus.html">Click here to play</a>.
+<a href="http://greggman.github.com/octopus/octopus.html">Click here to play</a>.
 
 The game can also be played using other browsers for controllers. For example 8 iPhones, Android phones,
 iPads or notebooks. To do this you need to have <a href="http://nodejs.org">node.js</a> 0.6.1 or newer installed. Then
