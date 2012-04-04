@@ -41,6 +41,7 @@ var g_canvas;
 var g_ctx;
 var g_clock = 0;
 var g_bgm;
+var g_octopi = [];
 // World scroll position.
 var g_scrollX = 0;
 var g_scrollY = 0;
@@ -198,11 +199,6 @@ images =
 		url: "images/playbutton.png"
 	}
 };
-var expression = 
-{
-	img: images.bodyNormal,
-	timer: 0
-};
 
 var LegsInfo = [
 { scrunchDir: -1, xOff:  0, yOff:  80, radius: 90, rotAccelInDeg: -20, rotationInDeg: 270 - 15 },
@@ -249,6 +245,10 @@ function main() {
   window.addEventListener('focus', resumeGame, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
+  g_octopi.push(new OctopusControl(0));
+  if (OPTIONS.battle) {
+    g_octopi.push(new OctopusControl(1));
+  }
 
   if (true) {
    g_bgm = $('bgm');
@@ -260,8 +260,18 @@ function main() {
   }
   audio.init(Sounds);
 
-  OctopusControl.setLegs(LegsInfo);
-  OctopusControl.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
+  for (var ii = 0; ii < g_octopi.length; ++ii) {
+    var octopus = g_octopi[ii];
+    octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
+    octopus.legBackSwing = [false, false, false, false, false, false, false, false];
+    octopus.expression =
+    {
+    	img: images.bodyNormal,
+    	timer: 0
+    };
+    octopus.setLegs(LegsInfo);
+    octopus.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
+  }
 
   MakeLevel();
 
@@ -342,69 +352,75 @@ function MakeLevel() {
 function CheckCollisions() {
   g_oldCollision = g_inCollision;
   g_inCollision = false;
-  var octoInfo = OctopusControl.getInfo();
-  for (var ii = 0; ii < g_obstacles.length; ++ii) {
-    var obj = g_obstacles[ii];
-    var dx = obj.x - octoInfo.x;
-    var dy = obj.y - octoInfo.y;
-    //ctx.font = "12pt monospace";
-    //ctx.fillStyle = "white";
-    //ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
-    var rad = obj.type.radius * obj.type.scale + OPTIONS.OCTOPUS_RADIUS;
-    var radSq = rad * rad;
-    var distSq = dx * dx + dy * dy;
-    //ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
-    if (distSq < radSq && g_gameState == "play") {
-      g_inCollision = true;
-      if (!g_oldCollision) {
-        OctopusControl.shootBack(obj);
-        InkSystem.startInk(dx / 2, dy / 2);
-        audio.play_sound('ouch');
-        audio.play_sound('urchin');
-        health = health - 3;//take damage
-        //change expression
-        expression.img = images.bodyOw;
-        expression.timer = 35;
+  for (var jj = 0; jj < g_octopi.length; ++jj) {
+    var octopus = g_octopi[jj];
+    var octoInfo = octopus.getInfo();
+    for (var ii = 0; ii < g_obstacles.length; ++ii) {
+      var obj = g_obstacles[ii];
+      var dx = obj.x - octoInfo.x;
+      var dy = obj.y - octoInfo.y;
+      //ctx.font = "12pt monospace";
+      //ctx.fillStyle = "white";
+      //ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
+      var rad = obj.type.radius * obj.type.scale + OPTIONS.OCTOPUS_RADIUS;
+      var radSq = rad * rad;
+      var distSq = dx * dx + dy * dy;
+      //ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
+      if (distSq < radSq && g_gameState == "play") {
+        g_inCollision = true;
+        if (!g_oldCollision) {
+          octopus.shootBack(obj);
+          InkSystem.startInk(dx / 2, dy / 2);
+          audio.play_sound('ouch');
+          audio.play_sound('urchin');
+          health = health - 3;//take damage
+          //change expression
+          octopus.expression.img = images.bodyOw;
+          octopus.expression.timer = 35;
+        }
+        break;
       }
-      break;
     }
   }
 }
 
 function CheckCollection()
 {
-	var octoInfo = OctopusControl.getInfo();
-	var itemsToRemove = [];
-	for(var ii = 0; ii < g_collectibles.length; ii++)
-	{
-		var obj = g_collectibles[ii];
-		var dx = obj.x - octoInfo.x;
-		var dy = obj.y - octoInfo.y;
-		var rad = obj.radius + OPTIONS.OCTOPUS_RADIUS;
-		var radSq = rad * rad;
-		var distSq = dx * dx + dy * dy;
-		
-		if(distSq < radSq && !obj.isCollected)
-		{
-            audio.play_sound('eat');
-			//collect stuffs!
-			obj.isCollected = true;
-			health++;//get healed a little
-			if(health > 9)
-			{
-				health = 9;
-			}
-			itemsToRemove.push(ii);
-			//change expression
-			expression.img = images.bodyHappy;
-			expression.timer = 35;
-		}
-	}
-	//remove collected items
-	for(var ii = 0; ii < itemsToRemove; ii++)
-	{
-		g_collectibles.splice(itemsToRemove[ii], 1);
-	}
+    for (var jj = 0; jj < g_octopi.length; ++jj) {
+        var octopus = g_octopi[jj];
+    	var octoInfo = octopus.getInfo();
+    	var itemsToRemove = [];
+    	for (var ii = 0; ii < g_collectibles.length; ii++)
+    	{
+    		var obj = g_collectibles[ii];
+    		var dx = obj.x - octoInfo.x;
+    		var dy = obj.y - octoInfo.y;
+    		var rad = obj.radius + OPTIONS.OCTOPUS_RADIUS;
+    		var radSq = rad * rad;
+    		var distSq = dx * dx + dy * dy;
+
+    		if(distSq < radSq && !obj.isCollected)
+    		{
+                audio.play_sound('eat');
+    			//collect stuffs!
+    			obj.isCollected = true;
+    			health++;//get healed a little
+    			if(health > 9)
+    			{
+    				health = 9;
+    			}
+    			itemsToRemove.push(ii);
+    			//change expression
+    			octopus.expression.img = images.bodyHappy;
+    			octopus.expression.timer = 35;
+    		}
+    	}
+    	//remove collected items
+    	for (var ii = 0; ii < itemsToRemove; ii++)
+    	{
+    		g_collectibles.splice(itemsToRemove[ii], 1);
+    	}
+    }
 }
 
 function drawBackground(ctx) {
@@ -452,7 +468,7 @@ function drawHealthHUD(x, y, ctx)
 	var hpCounter = health;
 	ctx.save();
 	ctx.translate(x, y);
-	for(var ii = 0; ii < 3; ii++)
+	for (var ii = 0; ii < 3; ii++)
 	{
 		if(hpCounter >= 3)
 		{
@@ -500,7 +516,7 @@ function drawObstacles(ctx) {
 
 function drawCollectibles(ctx)
 {
-	for(var i = 0; i < g_collectibles.length; i++)
+	for (var i = 0; i < g_collectibles.length; i++)
 	{
 		var obj = g_collectibles[i];
 		if(!obj.isCollected)
@@ -523,8 +539,6 @@ function drawCollectibles(ctx)
 	
 }
 
-legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
-legBackSwing = [false, false, false, false, false, false, false, false];
 g_debounceTimer = 0;
 
 function update(elapsedTime, ctx) {
@@ -569,9 +583,11 @@ function update(elapsedTime, ctx) {
   //don't move the octopus if it's dead
   if(!HasLost)
   {
-    OctopusControl.update(elapsedTime);
+    for (var jj = 0; jj < g_octopi.length; ++jj) {
+      g_octopi[jj].update(elapsedTime);
+    }
   }
-  var octoInfo = OctopusControl.getInfo();
+  var octoInfo = g_octopi[0].getInfo();
   
   //track score
   DistanceTraveled += ((octoInfo.y - PrevPos.y) / 10) | 0;
@@ -581,8 +597,9 @@ function update(elapsedTime, ctx) {
   ctx.save();
 
   if (OPTIONS.battle) {
-    var otherX = 512;
-    var otherY = 512;
+    var octoInfo1 = g_octopi[1].getInfo();
+    var otherX = octoInfo1.x;
+    var otherY = octoInfo1.y;
     var dx = otherX - octoInfo.x;
     var dy = otherY - octoInfo.y;
     var centerX = octoInfo.x + dx * 0.5;
@@ -648,79 +665,86 @@ function update(elapsedTime, ctx) {
   drawObstacles(ctx);
   drawCollectibles(ctx);
 
-  ctx.save();
-  ctx.translate(0, octoInfo.y);
-  ctx.translate(octoInfo.x, 0);
-  ctx.rotate(octoInfo.rotation);
-  
-  // drawCircle(ctx, 0, 0, 100, "rgb(200,0,255)");
-  // only follow the octopus if you haven't yet lost
-  if(HasLost)
-  {
-	//make the octopus fly up
-	drawLegs(legMovement, ctx);
-	drawOctopusBody(expression.img, 0, -deathAnimDistance, 0, ctx);
-	if(deathAnimDistance < 500)
-	{
-		deathAnimDistance = deathAnimDistance + 4;
-	}
-	expression.timer = 100;
-	ctx.restore();
+  for (var jj = 0; jj < g_octopi.length; ++jj) {
+    var octopus = g_octopi[jj];
+    var octoInfo = octopus.getInfo();
+    var legMovement = octopus.legMovement;
+    var legBackSwing = octopus.legBackSwing;
+    var expression = octopus.expression;
+    ctx.save();
+    ctx.translate(0, octoInfo.y);
+    ctx.translate(octoInfo.x, 0);
+    ctx.rotate(octoInfo.rotation);
+
+    // drawCircle(ctx, 0, 0, 100, "rgb(200,0,255)");
+    // only follow the octopus if you haven't yet lost
+    if(HasLost)
+    {
+  	//make the octopus fly up
+  	drawLegs(octopus, legMovement, ctx);
+  	drawOctopusBody(expression.img, 0, -deathAnimDistance, 0, ctx);
+  	if(deathAnimDistance < 500)
+  	{
+  		deathAnimDistance = deathAnimDistance + 4;
+  	}
+  	expression.timer = 100;
+  	ctx.restore();
+    }
+    else
+    {
+  	  drawLegs(octopus, legMovement, ctx);
+  	  drawOctopusBody(expression.img, 0, 0, 0, ctx);
+    }
+    //change expression
+    if(expression.timer > 0)
+    {
+  	expression.timer--;
+    }
+    else
+    {
+  	expression.timer = 0;
+  	expression.img = images.bodyNormal;
+    }
+    var legsInfo = octopus.getLegsInfo();
+    for (var ii = 0; ii < legsInfo.length; ++ii) {
+  	var legInfo = legsInfo[ii];
+  	//start leg animation
+  	if(legInfo.upTime > g_clock)
+  	{
+  		legBackSwing[ii] = true;
+  	}
+  	//increment leg animation
+  	if(legBackSwing[ii] == true)
+  	{
+  		legMovement[ii] += OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime;
+  	}
+  	//check to see if leg backswing is done
+  	if(legMovement[ii] > OPTIONS.LEG_SCRUNCH)
+  	{
+  		legMovement[ii] = OPTIONS.LEG_SCRUNCH;
+  		legBackSwing[ii] = false;
+  	}
+  	//decrement leg animation
+  	if(legMovement[ii] > 0)
+  	{
+  		legMovement[ii] -= OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime;
+  	}
+      // var legInfo = legsInfo[ii];
+      // ctx.save();
+      // ctx.rotate(legInfo.rotation);
+  	// ctx.translate(0, 100);
+  	// // drawLeg(0, 0, 15, ctx);
+      // drawCircle(ctx, 0, 0, 15,
+                 // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
+      // ctx.restore();
+    }
+    // drawCircle(ctx, 0, 80, 10, "rgb(255,255,255)");
+    // drawCircle(ctx, 0, 82, 5, "rgb(0,0,0)");
+    if (OPTIONS.debug) {
+      drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+    }
+    ctx.restore();
   }
-  else
-  {
-	  drawLegs(legMovement, ctx);
-	  drawOctopusBody(expression.img, 0, 0, 0, ctx);
-  }
-  //change expression
-  if(expression.timer > 0)
-  {
-	expression.timer--;
-  }
-  else
-  {
-	expression.timer = 0;
-	expression.img = images.bodyNormal;
-  }
-  for (var ii = 0; ii < LegsInfo.length; ++ii) {
-	var legInfo = LegsInfo[ii];
-	//start leg animation
-	if(legInfo.upTime > g_clock)
-	{
-		// legMovement[ii] = 11;
-		legBackSwing[ii] = true;
-	}
-	//increment leg animation
-	if(legBackSwing[ii] == true)
-	{
-		legMovement[ii] += OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime;
-	}
-	//check to see if leg backswing is done
-	if(legMovement[ii] > OPTIONS.LEG_SCRUNCH)
-	{
-		legMovement[ii] = OPTIONS.LEG_SCRUNCH;
-		legBackSwing[ii] = false;
-	}
-	//decrement leg animation
-	if(legMovement[ii] > 0)
-	{
-		legMovement[ii] -= OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime;
-	}
-    // var legInfo = LegsInfo[ii];
-    // ctx.save();
-    // ctx.rotate(legInfo.rotation);
-	// ctx.translate(0, 100);
-	// // drawLeg(0, 0, 15, ctx);
-    // drawCircle(ctx, 0, 0, 15,
-               // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
-    // ctx.restore();
-  }
-  // drawCircle(ctx, 0, 80, 10, "rgb(255,255,255)");
-  // drawCircle(ctx, 0, 82, 5, "rgb(0,0,0)");
-  if (OPTIONS.debug) {
-    drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
-  }
-  ctx.restore();
 
   InkSystem.drawInks(ctx, elapsedTime);
   ctx.restore(); // scroll
@@ -783,11 +807,12 @@ function LoadImage(url, callback)
 	return image;
 }
 
-function drawLegs(scrunches, ctx)
+function drawLegs(octopus, scrunches, ctx)
 {
-	for(var i = 0; i < 8; i++)
+    var legsInfo = octopus.getLegsInfo();
+	for (var i = 0; i < 8; i++)
 	{
-        var info = LegsInfo[i];
+        var info = legsInfo[i];
 		ctx.save();
         ctx.rotate(info.rotation);
         ctx.translate(info.xOff, info.yOff);
@@ -898,7 +923,7 @@ function MoveTentacle(tipPosX, tipPosY)
 function LoadAllImages(images, callback)
 {
 	var count = 0;
-	for(var name in images)
+	for (var name in images)
 	{
 		count++;
 		images[name].img = LoadImage(images[name].url, 
@@ -935,7 +960,7 @@ InkSystem = (function(){
     if (inkTime < g_clock && inkCount > 0) {
       inkTime = g_clock + OPTIONS.INK_LEAK_DURATION / OPTIONS.INK_COUNT;
       --inkCount;
-      var octoInfo = OctopusControl.getInfo();
+      var octoInfo = g_octopi[0].getInfo();
       birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
     }
 

@@ -29,9 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 InputSystem = (function(){
-  var eventQueue = [];
+  "strict";
+  var eventQueues = [];
   var MAX_EVENT_TIME = 0.2;
-  var listeners = {};
+  var listeners = [];
   var active = false;
 
   /*
@@ -52,18 +53,49 @@ InputSystem = (function(){
       c = event.charCode;
     }
     switch (String.fromCharCode(c).toLowerCase()) {
-    case '8': addEvent(0); break;
-    case 'p': addEvent(1); break;
-    case 'm': addEvent(2); break;
-    case 'b': addEvent(3); break;
-    case 'c': addEvent(4); break;
-    case 'z': addEvent(5); break;
-    case 'q': addEvent(6); break;
-    case '4': addEvent(7); break;
+    case '8': addEvent(0, 0); break;
+    case 'p': addEvent(0, 1); break;
+    case 'm': addEvent(0, 2); break;
+    case 'b': addEvent(0, 3); break;
+    case 'c': addEvent(0, 4); break;
+    case 'z': addEvent(0, 5); break;
+    case 'q': addEvent(0, 6); break;
+    case '4': addEvent(0, 7); break;
+    case '7': addEvent(1, 0); break;
+    case 'o': addEvent(1, 1); break;
+    case 'n': addEvent(1, 2); break;
+    case 'v': addEvent(1, 3); break;
+    case 'x': addEvent(1, 4); break;
+    case 'a': addEvent(1, 5); break;
+    case 'w': addEvent(1, 6); break;
+    case '3': addEvent(1, 7); break;
     }
   }, false);
 
-  function addEvent(direction) {
+  function getEventQueue(player) {
+    var eventQueue = eventQueues[player];
+    if (!eventQueue) {
+      eventQueue = [];
+      eventQueues[player] = eventQueue;
+    }
+    return eventQueue;
+  }
+
+  function getListeners(player, type) {
+    var playerListeners = listeners[player];
+    if (!playerListeners) {
+      playerListeners = {};
+      listeners[player] = playerListeners;
+    }
+    var list = playerListeners[type];
+    if (!list) {
+      list = [];
+      playerListeners[type] = list;
+    }
+    return list;
+  }
+
+  function addEvent(player, direction) {
     if (!active) {
       return;
     }
@@ -71,18 +103,20 @@ InputSystem = (function(){
       direction: direction,
       time: g_clock
     };
+    var eventQueue = getEventQueue(player);
     eventQueue.push(event);
-    var list = listeners['direction'];
+    var list = getListeners(player, 'direction');
     if (list) {
       list = list.slice(0);
       for (var ii = 0; ii < list.length; ++ii) {
         list[ii](event);
       }
     }
-    removeOldEvents();
+    removeOldEvents(player);
   }
 
-  function removeOldEvents() {
+  function removeOldEvents(player) {
+    var eventQueue = getEventQueue(player);
     var now = g_clock;
     var ii = 0;
     for (; ii < eventQueue.length; ++ii) {
@@ -94,12 +128,8 @@ InputSystem = (function(){
     eventQueue.splice(0, ii);
   }
 
-  function addEventListener(type, listener) {
-    var list = listeners[type];
-    if (!list) {
-      list = [];
-      listeners[type] = list;
-    }
+  function addEventListener(player, type, listener) {
+    var list = getListeners(player, [type]);
     list.push(listener);
   }
 
@@ -121,8 +151,8 @@ InputSystem = (function(){
   }
 }());
 
-OctopusControl = (function(){
-
+var OctopusControl = function(player) {
+  "strict";
   var legsInfo;
   var xVel = 0;
   var yVel = 0;
@@ -150,7 +180,7 @@ OctopusControl = (function(){
     }
   }
 
-  InputSystem.addEventListener('direction', handleDirection);
+  InputSystem.addEventListener(player, 'direction', handleDirection);
 
   function getInfo() {
     return octoInfo;
@@ -162,8 +192,12 @@ OctopusControl = (function(){
     octoInfo.rotation = rotation;
   }
 
+  function getLegsInfo() {
+    return legsInfo;
+  }
+
   function setLegs(info) {
-    legsInfo = info;
+    legsInfo = JSON.parse(JSON.stringify(info));
     for (var ii = 0; ii < legsInfo.length; ++ii) {
       var legInfo = legsInfo[ii];
       legInfo.upTime = 0;
@@ -226,6 +260,7 @@ OctopusControl = (function(){
   }
 
   return {
+    getLegsInfo: getLegsInfo,
     getInfo: getInfo,
     shootBack: shootBack,
     setInfo: setInfo,
@@ -234,4 +269,4 @@ OctopusControl = (function(){
 
     dummy: false  // just marks the end.
   }
-}());
+};

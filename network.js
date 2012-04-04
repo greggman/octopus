@@ -141,7 +141,7 @@ Player.prototype.update = function(msg) {
   switch (msg.cmd) {
   case 'press':
     if (this.slotId < 8) {
-      InputSystem.addEvent(g_slotRemap[this.slotId]);
+      InputSystem.addEvent(0, g_slotRemap[this.slotId]);
     }
     break;
   }
