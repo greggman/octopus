@@ -13,9 +13,16 @@ function connect() {
     return;
   }
 
-  var numSlots = OPTIONS.battle ? 16 : 8;
-  for (var ii = 0; ii < numSlots; ++ii) {
-    g_freeSlots.push(ii);
+  if (OPTIONS.battle) {
+    for (var ii = 0; ii < 16; ++ii) {
+      var side = ii % 2;
+      var slot = Math.floor(ii / 2);
+      g_freeSlots.push(side * 8 + slot);
+    }
+  } else {
+    for (var ii = 0; ii < 8; ++ii) {
+      g_freeSlots.push(ii);
+    }
   }
 
 
@@ -140,9 +147,7 @@ Player.prototype.update = function(msg) {
   log("player slot:" + this.slotId + ", msg");
   switch (msg.cmd) {
   case 'press':
-    if (this.slotId < 8) {
-      InputSystem.addEvent(Math.floor(this.slotId / 8), g_slotRemap[this.slotId % 8]);
-    }
+    InputSystem.addEvent(Math.floor(this.slotId / 8), g_slotRemap[this.slotId % 8]);
     break;
   }
 };
