@@ -11,7 +11,7 @@ The game can be played on a single computer with 8 players, each one taking a ke
 The game can also be played using other browsers for controllers. For example 8 iPhones, Android phones,
 iPads or notebooks. To do this you need to have <a href="http://nodejs.org">node.js</a> 0.6.1. Here are the steps
 
-1.  Go to the <a href="http://nodejs.org">node.js page</a> and download and install nods.js
+1.  Go to the <a href="http://nodejs.org">node.js page</a> and download and install node.js
 
 2.  Download and install git from <a href="http://git-scm.com/">the git site.
 
