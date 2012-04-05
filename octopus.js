@@ -56,7 +56,10 @@ var g_oldCollision = false;
 var g_printMsgs = [];
 var g_gameState = 'title';
 var OPTIONS = {
-  LEG_SCRUNCH: 11,
+	legWaveAmount: 0.1,
+	legWaveSpeed: 2,
+	legWaveOffset: 0.5,
+  LEG_SCRUNCH: 5,
   LEG_SCRUNCH_SPEED: 90,
   LEG_UNSCRUNCH_SPEED: 20,
   LEVEL_WIDTH: 1024,
@@ -67,7 +70,10 @@ var OPTIONS = {
   INK_LEAK_DURATION: 1.5,
   INK_COUNT: 10,
   INK_SCALE: 0.3,
-  LEG_COMBINE_JOINTS: 11,
+  LEG_COMBINE_JOINT1: 6,
+  LEG_COMBINE_JOINT2: 6,
+  LEG_COMBINE_JOINT3: 15,
+  LEG_COMBINE_JOINT4: 2,
   LEG_FRICTION: 0.98,
   LEG_ROT_FRICTION: 0.98,
   LEG_ACCELERATION: 60,
@@ -240,8 +246,16 @@ function main() {
   g_canvas = document.getElementById("canvas");
   resizeCanvas();
   window.addEventListener('resize', resize, true);
-  window.addEventListener('blur', pauseGame, true);
-  window.addEventListener('focus', resumeGame, true);
+  window.addEventListener('blur', function() {
+		if (!OPTIONS.noPause) {
+			pauseGame();
+		}
+	}, true);
+  window.addEventListener('focus', function() {
+		if (!OPTIONS.noPause) {
+			resumeGame();
+		}
+	}, true);
   g_ctx = g_canvas.getContext("2d");
   LoadAllImages(images, mainLoop);
   g_octopi.push(new OctopusControl(0));
@@ -716,39 +730,15 @@ function update(elapsedTime, ctx) {
     }
     var legsInfo = octopus.getLegsInfo();
     for (var ii = 0; ii < legsInfo.length; ++ii) {
-  	var legInfo = legsInfo[ii];
-  	//start leg animation
-  	if(legInfo.upTime > g_clock)
-  	{
-  		legBackSwing[ii] = true;
-  	}
-  	//increment leg animation
-  	if(legBackSwing[ii] == true)
-  	{
-  		legMovement[ii] += OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime;
-  	}
-  	//check to see if leg backswing is done
-  	if(legMovement[ii] > OPTIONS.LEG_SCRUNCH)
-  	{
-  		legMovement[ii] = OPTIONS.LEG_SCRUNCH;
-  		legBackSwing[ii] = false;
-  	}
-  	//decrement leg animation
-  	if(legMovement[ii] > 0)
-  	{
-  		legMovement[ii] -= OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime;
-  	}
-      // var legInfo = legsInfo[ii];
-      // ctx.save();
-      // ctx.rotate(legInfo.rotation);
-  	// ctx.translate(0, 100);
-  	// // drawLeg(0, 0, 15, ctx);
-      // drawCircle(ctx, 0, 0, 15,
-                 // g_clock < legInfo.upTime ? "rgb(255,0,255)" :"rgb(150, 0, 233)");
-      // ctx.restore();
-    }
-    // drawCircle(ctx, 0, 80, 10, "rgb(255,255,255)");
-    // drawCircle(ctx, 0, 82, 5, "rgb(0,0,0)");
+			var legInfo = legsInfo[ii];
+			//start leg animation
+			if(legInfo.upTime > g_clock) {
+				legMovement[ii] = Math.min(OPTIONS.LEG_SCRUNCH, legMovement[ii] + OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime);
+			} else {
+				legMovement[ii] = Math.max(0, legMovement[ii] - OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime);
+			}
+		}
+		//increment leg animation
     if (OPTIONS.debug) {
       drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
     }
@@ -859,46 +849,37 @@ function drawLegs(octopus, scrunches, ctx)
 
 function drawLeg(baseX, baseY, scrunch, legNdx, ctx)
 {
-	//define base variable position for each leg
-	var base = 
-	{
-		x: baseX - scrunch,
-		y: baseY - scrunch
-	};
+		ctx.save();
+		ctx.rotate((scrunch * 5) * Math.PI / 180);
+		ctx.translate(baseX, baseY);
+		var wave = Math.sin((g_clock + legNdx) * OPTIONS.legWaveSpeed) * OPTIONS.legWaveAmount;
+		ctx.rotate(wave + (scrunch * 10) * Math.PI / 180);
 
-    var s = (scrunch > 0 ? 1 : -1)
-    //scrunch = OPTIONS.LEG_SCRUNCH * s - scrunch;
-    scrunch += Math.sin(g_clock + legNdx);
+		var img = images.legSegment1.img;
+		ctx.save();
+		ctx.translate(-img.width / 2, 0);
+		ctx.drawImage(img, 0, 0);
+		ctx.restore();
 
-	ctx.save();
-	ctx.rotate((scrunch * 5) * Math.PI / 180);
-	ctx.translate(baseX, baseY);
+		ctx.translate(0, img.height - OPTIONS.LEG_COMBINE_JOINT1);
+		var wave = Math.sin((g_clock + legNdx + OPTIONS.legWaveOffset) * OPTIONS.legWaveSpeed) * OPTIONS.legWaveAmount;
+		ctx.rotate(wave + (scrunch * 10) * Math.PI / 180);
 
-    var img = images.legSegment1.img;
-    ctx.save();
-    ctx.translate(-img.width / 2, 0);
-    ctx.drawImage(img, 0, 0);
-    ctx.restore();
+		var img = images.legSegment2.img;
+		ctx.save();
+		ctx.translate(-img.width / 2, -OPTIONS.LEG_COMBINE_JOINT2);
+		ctx.drawImage(img, 0, 0);
+		ctx.restore();
 
-	ctx.translate(0, img.height - scrunch - OPTIONS.LEG_COMBINE_JOINTS);
-    scrunch += Math.sin(g_clock + legNdx + 1);
-	ctx.rotate((scrunch * 10) * Math.PI / 180);
+		ctx.translate(0, img.height - OPTIONS.LEG_COMBINE_JOINT3);
+		var wave = Math.sin((g_clock + legNdx + OPTIONS.legWaveOffset * 2) * OPTIONS.legWaveSpeed) * OPTIONS.legWaveAmount;
+		ctx.rotate(wave + (scrunch * -10) * Math.PI / 180);
 
-    var img = images.legSegment2.img;
-    ctx.save();
-    ctx.translate(-img.width / 2, 0);
-    ctx.drawImage(img, 0, 0);
-    ctx.restore();
-
-	ctx.translate(0, img.height - scrunch - OPTIONS.LEG_COMBINE_JOINTS);
-    scrunch += Math.sin(g_clock + legNdx + 2);
-	ctx.rotate((scrunch * -10) * Math.PI / 180);
-
-    var img = images.legTip.img;
-    ctx.translate(-img.width / 2, 0);
-    ctx.drawImage(img, 0, 0);
-	ctx.restore();
-    return;
+		var img = images.legTip.img;
+		ctx.translate(-img.width / 2, -OPTIONS.LEG_COMBINE_JOINT4);
+		ctx.drawImage(img, 0, 0);
+		ctx.restore();
+		return;
 }
 
 function drawOctopusBody(image, x, y, rotation, ctx)
