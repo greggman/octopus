@@ -103,7 +103,6 @@ function randInt(range) {
 
 function resizeCanvas() {
   if (g_canvas.height != g_canvas.clientHeight) {
-    g_canvas.width = OPTIONS.LEVEL_WIDTH;
     g_canvas.height = g_canvas.clientHeight;
   }
 }
@@ -423,34 +422,44 @@ function CheckCollection()
     }
 }
 
+var g_bgPattern;
 function drawBackground(ctx) {
-  var img = images.background.img;
-  var imageWidth = img.width;
-  var imageHeight = img.height;
-  var tilesAcross = (g_canvas.width / g_baseScale + imageWidth - 1) / imageWidth;
-  var tilesDown = (Math.floor(g_canvas.height / g_baseScale / g_heightScale) + imageHeight - 1) / imageHeight;
-  var sx = Math.floor(g_scrollX);
-  var sy = Math.floor(g_scrollY);
-  if (sx < 0) {
-    sx = sx - (Math.floor(sx / imageWidth) + 1) * imageWidth;
-  }
-  if (sy < 0) {
-    sy = sy - (Math.floor(sy / imageHeight) + 1) * imageHeight;
-  }
-  sx = sx % imageWidth;
-  sy = sy % imageHeight;
+	if (!g_bgPattern) {
+		g_bgPattern = ctx.createPattern(images.background.img, "repeat");
+	}
+	ctx.save();
+	ctx.translate(-g_scrollIntX, -g_scrollIntY);
+	ctx.fillStyle = g_bgPattern;
+	ctx.fillRect(g_scrollIntX, g_scrollIntY, ctx.canvas.width / g_baseScale, ctx.canvas.height / g_baseScale / g_heightScale);
+	ctx.restore();
+  //var img = images.background.img;
+  //var imageWidth = img.width;
+  //var imageHeight = img.height;
+  //var tilesAcross = (g_canvas.width / g_baseScale + imageWidth - 1) / imageWidth;
+  //var tilesDown = (Math.floor(g_canvas.height / g_baseScale / g_heightScale) + imageHeight - 1) / imageHeight;
+  //var sx = Math.floor(g_scrollX);
+  //var sy = Math.floor(g_scrollY);
+  //if (sx < 0) {
+  //  sx = sx - (Math.floor(sx / imageWidth) + 1) * imageWidth;
+  //}
+  //if (sy < 0) {
+  //  sy = sy - (Math.floor(sy / imageHeight) + 1) * imageHeight;
+  //}
+  //sx = sx % imageWidth;
+  //sy = sy % imageHeight;
+  //
+  //tilesDown = Math.min(100, tilesDown);
+  //tilesAcross = Math.min(100, tilesDown);
+  //
+  //ctx.save();
+  //ctx.translate(-sx, -sy);
+  //for (var yy = -1; yy < tilesDown; ++yy) {
+  //  for (var xx = -1; xx < tilesAcross; ++xx) {
+  //    ctx.drawImage(img, xx * imageWidth, yy * imageHeight);
+  //  }
+  //}
+  //ctx.restore();
 
-  tilesDown = Math.min(100, tilesDown);
-  tilesAcross = Math.min(100, tilesDown);
-
-  ctx.save();
-  ctx.translate(-sx, -sy);
-  for (var yy = -1; yy < tilesDown; ++yy) {
-    for (var xx = -1; xx < tilesAcross; ++xx) {
-      ctx.drawImage(img, xx * imageWidth, yy * imageHeight);
-    }
-  }
-  ctx.restore();
 }
 
 function drawImageCentered(ctx, img, x, y) {
