@@ -32,6 +32,15 @@ window.onload = main;
 
 var g_socket;
 var g_statusElem;
+var g_images;
+var g_canvas;
+var g_ctx;
+
+var OPTIONS = {
+};
+
+MergeOptions(OPTIONS, OctoRender.getOptions());
+getURLOptions(OPTIONS);
 
 function debug(msg) {
   log(msg);
@@ -42,11 +51,36 @@ function debug(msg) {
 }
 
 function main() {
+  g_canvas = $("canvas");
+  g_ctx = g_canvas.getContext("2d");
+  g_images = OctoRender.getImages();
+  LoadAllImages(g_images, renderOctopus);
   debug("start");
   connect();
   window.addEventListener('mousedown', press, false);
   window.addEventListener('touchstart', press, false);
   window.addEventListener('keypress', press, false);
+}
+
+function renderOctopus() {
+	var expression = {
+		img: g_images.bodyNormal
+	};
+	var drawInfo = {
+		x: 0,
+		y: 0,
+		rotation: 0,
+		images: g_images,
+		legsInfo: OctoRender.getLegsInfo(),
+		legMovement: [0, 0, 0, 0, 0, 0, 0, 0],
+		expression: expression,
+		clock: 0
+	};
+	var ctx = g_ctx;
+	ctx.save();
+	ctx.translate(g_canvas.width * 0.5, g_canvas.height * 0.5);
+  OctoRender.drawOctopus(ctx, drawInfo);
+	ctx.restore();
 }
 
 function press() {

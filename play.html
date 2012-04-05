@@ -48,14 +48,14 @@ html, body {
   color: #fff;
 }
 canvas {
-  background-color: #000080;
+  /*background-color: #000080;*/
 }
 #online {
     display: none;
     position: absolute;
     left: 0px;
     top: 0px;
-    z-index: 2;
+    z-index: 20;
 }
 #debug {
 
@@ -64,9 +64,9 @@ canvas {
     position: absolute;
     left: 0px;
     top: 0px;
-    z-index: 3;
+    z-index: 19;
 }
-#viewContainer {
+.flex-center {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
@@ -81,11 +81,26 @@ canvas {
   box-orient: horizontal;
   box-pack: center;
   box-align: center;
+}
 
+#viewContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
   height: 100%;
+  z-index: 3;
 }
 .instruction {
     padding: 2em;
+}
+#canvasContainer {
+ position: absolute;
+ top: 0px;
+ left: 0px;
+ width: 100%;
+ height: 100%;
+ z-index: 1;
 }
 </style>
 <link rel="stylesheet" media="all and (max-device-width: 1024px) and (orientation:portrait)" href="tablet-portrait.css">
@@ -95,20 +110,19 @@ canvas {
 <link rel="stylesheet" media="all and (min-device-width: 1025px)" href="monitor.css">
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="utils.js"></script>
+<script type="text/javascript" src="octopus.js"></script>
 <script type="text/javascript" src="controller.js"></script>
 </head>
 <body>
-<div id="viewContainer">
-  <div class="instructions">Press Any Key or Touch the Screen to Wiggle a Tentacle</div>
-<!--
-<canvas id="canvas" width="512" height="512" style="width: 100%; height: 100%;"></canvas>
--->
+<div id="canvasContainer" class="flex-center">
+<canvas id="canvas" width="400" height="400" ></canvas>
+</div>
+<div id="viewContainer" class="flex-center">
+<div class="instructions">Press Any Key or Touch the Screen to Wiggle a Tentacle</div>
 </div>
 <div id="online">
 <div id="onlinestatus">disconnected</div>
 </div>
-<div id="debug">
-
-</div>
+<div id="debug"></div>
 </body>
 </html>

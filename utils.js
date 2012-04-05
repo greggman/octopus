@@ -24,12 +24,60 @@ var getURLOptions = function(obj) {
   }
 };
 
+function MergeOptions(opt, newOpt) {
+	for (var name in newOpt) {
+		opt[name] = newOpt[name];
+	}
+}
+
 function log(msg) {
   if (window.console && window.console.log) {
     window.console.log(msg);
   }
 }
 
+function getTime() {
+  return (new Date()).getTime() * 0.001;
+}
+
+function LoadImage(url, callback)
+{
+	var image = new Image();
+	image.onload = callback;
+	image.src = url;
+	return image;
+}
+
+function LoadAllImages(images, callback)
+{
+	var count = 0;
+	for (var name in images)
+	{
+		count++;
+		images[name].img = LoadImage(images[name].url,
+			function()
+			{
+				count--;
+				if(count == 0)
+				{
+					callback();
+				}
+			}
+		);
+	}
+}
+
+function AddImages(images, newImages) {
+	for (var name in newImages) {
+		images[name] = {
+			url: newImages[name].url
+		};
+	}
+}
+
+function degToRad(deg) {
+	return deg * Math.PI / 180;
+}
 
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){

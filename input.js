@@ -201,8 +201,6 @@ var OctopusControl = function(player) {
     for (var ii = 0; ii < legsInfo.length; ++ii) {
       var legInfo = legsInfo[ii];
       legInfo.upTime = 0;
-      legInfo.rotation = legInfo.rotationInDeg * Math.PI / 180;
-      legInfo.rotAccel = legInfo.rotAccelInDeg * Math.PI / 180;
     }
   }
 
