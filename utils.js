@@ -48,7 +48,7 @@ function LoadImage(url, callback)
 	return image;
 }
 
-function LoadAllImages(images, callback)
+function LoadImages(images, callback)
 {
 	var count = 0;
 	for (var name in images)
@@ -67,13 +67,26 @@ function LoadAllImages(images, callback)
 	}
 }
 
-function AddImages(images, newImages) {
-	for (var name in newImages) {
-		images[name] = {
-			url: newImages[name].url
-		};
+function Loader(callback) {
+	var count = 0;
+
+	this.loadImages = function(images) {
+		++count;
+		var that = this;
+		LoadImages(images, function() {
+			that.checkDone_();
+	  });
+	}
+
+	this.checkDone_ = function() {
+		--count;
+		if (count == 0) {
+			callback();
+		}
 	}
 }
+
+
 
 function degToRad(deg) {
 	return deg * Math.PI / 180;

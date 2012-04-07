@@ -209,9 +209,10 @@ function main() {
 	}, true);
   g_ctx = g_canvas.getContext("2d");
 
-	AddImages(g_images, OctoRender.getImages());
-
-  LoadAllImages(g_images, mainLoop);
+	var loader = new Loader(function() {
+		processImages(mainLoop);
+	});
+  loader.loadImages(g_images);
   g_octopi.push(new OctopusControl(0));
   if (OPTIONS.battle) {
     g_octopi.push(new OctopusControl(1));
@@ -229,17 +230,19 @@ function main() {
 
   for (var ii = 0; ii < g_octopi.length; ++ii) {
     var octopus = g_octopi[ii];
+		var images = OctoRender.getImages();
     octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
     octopus.legBackSwing = [false, false, false, false, false, false, false, false];
     octopus.expression =
     {
-    	img: g_images.bodyNormal,
+    	img: images.bodyNormal,
     	timer: 0
     };
     octopus.setLegs(OctoRender.getLegsInfo());
     octopus.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
 		octopus.drawInfo = {
-			images: g_images,
+			hue: (1 - ii * 0.2) % 1,
+			images: images,
 			legsInfo: octopus.getLegsInfo(),
 			legMovement: octopus.legMovement,
 			expression: octopus.expression,
@@ -247,6 +250,7 @@ function main() {
 			legDrift: .5,
 			deathAnimDistance: 0
 		};
+		loader.loadImages(images);
   }
 
   MakeLevel();
@@ -281,6 +285,36 @@ function main() {
       mainLoop();
     }
   }
+
+	function processImages(callback) {
+		var count = 0;
+		for (var ii = 0; ii < g_octopi.length; ++ii) {
+			var octopus = g_octopi[ii];
+			var drawInfo = octopus.drawInfo;
+			if (drawInfo.hue) {
+				var octoImages = drawInfo.images;
+				for (var name in octoImages) {
+					++count;
+					var image = octoImages[name].img;
+					ImageProcess.adjustHSV(image, drawInfo.hue, 0, 0, function(images, name) {
+						return function(img) {
+							images[name].img = img;
+							--count;
+							checkDone();
+						}
+					}(octoImages, name));
+				}
+			}
+		}
+
+		function checkDone() {
+			if (count == 0) {
+				callback();
+			}
+		}
+
+		checkDone();
+	}
 }
 
 function MakeObstacle(type, x, y) {
@@ -351,7 +385,7 @@ function CheckCollisions() {
           audio.play_sound('urchin');
           health = health - 3;//take damage
           //change expression
-          octopus.expression.img = g_images.bodyOw;
+          octopus.expression.img = octopus.drawInfo.images.bodyOw;
           octopus.expression.timer = 35;
         }
         break;
@@ -387,7 +421,7 @@ function CheckCollection()
     			}
     			itemsToRemove.push(ii);
     			//change expression
-    			octopus.expression.img = g_images.bodyHappy;
+    			octopus.expression.img = octopus.drawInfo.images.bodyHappy;
     			octopus.expression.timer = 35;
     		}
     	}
@@ -696,7 +730,7 @@ function update(elapsedTime, ctx) {
     else
     {
   	expression.timer = 0;
-  	expression.img = g_images.bodyNormal;
+  	expression.img = drawInfo.images.bodyNormal;
     }
     var legsInfo = octopus.getLegsInfo();
     for (var ii = 0; ii < legsInfo.length; ++ii) {

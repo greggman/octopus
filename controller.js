@@ -54,7 +54,7 @@ function main() {
   g_canvas = $("canvas");
   g_ctx = g_canvas.getContext("2d");
   g_images = OctoRender.getImages();
-  LoadAllImages(g_images, renderOctopus);
+  LoadImages(g_images, renderOctopus);
   debug("start");
   connect();
   window.addEventListener('mousedown', press, false);
