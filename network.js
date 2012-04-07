@@ -14,7 +14,8 @@ function connect() {
   }
 
   if (OPTIONS.battle) {
-    for (var ii = 0; ii < 16; ++ii) {
+    var numInputs = OPTIONS.numOctopi * 8;
+    for (var ii = 0; ii < numInputs; ++ii) {
       var side = ii % 2;
       var slot = Math.floor(ii / 2);
       g_freeSlots.push(side * 8 + slot);
@@ -35,8 +36,8 @@ function connect() {
   g_socket = io.connect(url);
   g_socket.on('connect', connected);
   g_socket.on('message', function(obj) {
-log("got message");
-log(obj);
+//log("got message");
+//log(obj);
     processMessage(obj);
   });
   g_socket.on('disconnect', disconnected);
@@ -144,7 +145,7 @@ g_slotRemap = [
 ];
 
 Player.prototype.update = function(msg) {
-  log("player slot:" + this.slotId + ", msg");
+  //log("player slot:" + this.slotId + ", msg");
   switch (msg.cmd) {
   case 'press':
     InputSystem.addEvent(Math.floor(this.slotId / 8), g_slotRemap[this.slotId % 8]);

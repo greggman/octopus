@@ -53,6 +53,7 @@ var g_oldCollision = false;
 var g_printMsgs = [];
 var g_gameState = 'title';
 var OPTIONS = {
+	numOctopi: 2,
   LEG_SCRUNCH: 5,
   LEG_SCRUNCH_SPEED: 90,
   LEG_UNSCRUNCH_SPEED: 20,
@@ -213,10 +214,13 @@ function main() {
 		processImages(mainLoop);
 	});
   loader.loadImages(g_images);
-  g_octopi.push(new OctopusControl(0));
   if (OPTIONS.battle) {
-    g_octopi.push(new OctopusControl(1));
-  }
+		for (var ii = 0; ii < OPTIONS.numOctopi; ++ii) {
+			g_octopi.push(new OctopusControl(ii));
+		}
+  } else {
+		g_octopi.push(new OctopusControl(0));
+	}
 
   if (true) {
    g_bgm = $('bgm');
@@ -443,34 +447,6 @@ function drawBackground(ctx) {
 	ctx.fillStyle = g_bgPattern;
 	ctx.fillRect(g_scrollIntX, g_scrollIntY, ctx.canvas.width / g_baseScale, ctx.canvas.height / g_baseScale / g_heightScale);
 	ctx.restore();
-  //var img = g_images.background.img;
-  //var imageWidth = img.width;
-  //var imageHeight = img.height;
-  //var tilesAcross = (g_canvas.width / g_baseScale + imageWidth - 1) / imageWidth;
-  //var tilesDown = (Math.floor(g_canvas.height / g_baseScale / g_heightScale) + imageHeight - 1) / imageHeight;
-  //var sx = Math.floor(g_scrollX);
-  //var sy = Math.floor(g_scrollY);
-  //if (sx < 0) {
-  //  sx = sx - (Math.floor(sx / imageWidth) + 1) * imageWidth;
-  //}
-  //if (sy < 0) {
-  //  sy = sy - (Math.floor(sy / imageHeight) + 1) * imageHeight;
-  //}
-  //sx = sx % imageWidth;
-  //sy = sy % imageHeight;
-  //
-  //tilesDown = Math.min(100, tilesDown);
-  //tilesAcross = Math.min(100, tilesDown);
-  //
-  //ctx.save();
-  //ctx.translate(-sx, -sy);
-  //for (var yy = -1; yy < tilesDown; ++yy) {
-  //  for (var xx = -1; xx < tilesAcross; ++xx) {
-  //    ctx.drawImage(img, xx * imageWidth, yy * imageHeight);
-  //  }
-  //}
-  //ctx.restore();
-
 }
 
 function drawImageCentered(ctx, img, x, y) {
@@ -617,33 +593,39 @@ function update(elapsedTime, ctx) {
   ctx.save();
 
   if (OPTIONS.battle) {
-    var octoInfo1 = g_octopi[1].getInfo();
-    var otherX = octoInfo1.x;
-    var otherY = octoInfo1.y;
-    var dx = otherX - octoInfo.x;
-    var dy = otherY - octoInfo.y;
-    var centerX = octoInfo.x + dx * 0.5;
-    var centerY = octoInfo.y + dy * 0.5;
-
+    var octoInfo = g_octopi[0].getInfo();
+		var minX = octoInfo.x;
+		var minY = octoInfo.y;
+		var maxX = octoInfo.x;
+		var maxY = octoInfo.y;
+		for (var ii = 1; ii < g_octopi.length; ++ii) {
+			var octoInfo = g_octopi[ii].getInfo();
+			minX = Math.min(octoInfo.x, minX);
+			minY = Math.min(octoInfo.y, minY);
+			maxX = Math.max(octoInfo.x, maxX);
+			maxY = Math.max(octoInfo.y, maxY);
+		}
+		var dx = maxX - minX;
+		var dy = maxY - minY;
+		var centerX = minX + dy * 0.5;
+		var centerY = minY + dy * 0.5;
 
     g_heightScale = g_canvas.clientWidth / g_canvas.width;
     var screenWidth = 1024
     var screenHeight = g_canvas.height / g_heightScale;
-    var adx = Math.abs(dx);
-    var ady = Math.abs(dy);
 
     print("sw: " + screenWidth + " sh:" + screenHeight.toFixed(0));
-    print("adx: " + adx.toFixed(0) + " ady: " + ady.toFixed(0));
+    print("adx: " + dx.toFixed(0) + " ady: " + dy.toFixed(0));
 
     var halfScreenWidth = screenWidth / 2;
     var halfScreenHeight = screenHeight / 2;
 
     g_baseScale = 1;
-    if (adx > halfScreenWidth) {
-      g_baseScale = halfScreenWidth / adx;
+    if (dx > halfScreenWidth) {
+      g_baseScale = halfScreenWidth / dx;
     }
-    if (ady > halfScreenHeight) {
-      var yBaseScale = halfScreenHeight / ady;
+    if (dy > halfScreenHeight) {
+      var yBaseScale = halfScreenHeight / dy;
       g_baseScale = Math.min(g_baseScale, yBaseScale);
     }
 

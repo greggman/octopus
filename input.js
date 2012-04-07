@@ -69,6 +69,10 @@ InputSystem = (function(){
     case 'a': addEvent(1, 5); break;
     case 'w': addEvent(1, 6); break;
     case '3': addEvent(1, 7); break;
+
+    case '1': addEvent(2, 6); break;
+    case '2': addEvent(3, 2); break;
+    case '0': addEvent(4, 6); break;
     }
   }, false);
 
