@@ -165,11 +165,35 @@ function getLegsInfo() {
 	];
 }
 
+function markLeg(ctx, info, legNdx) {
+	var legsInfo = info.legsInfo;
+	var legInfo = legsInfo[legNdx];
+	var scrunches = info.legMovement;
+	ctx.save();
+	ctx.rotate(legInfo.rotation);
+	ctx.translate(legInfo.xOff, legInfo.yOff);
+	var scrunch = scrunches[legNdx] * legInfo.scrunchDir + legInfo.scrunchDir;
+	ctx.rotate((scrunch * 5) * Math.PI / 180);
+	var wave = Math.sin((info.clock + legNdx) * OPTIONS.legWaveSpeed) * OPTIONS.legWaveAmount;
+	ctx.rotate(wave + (scrunch * 10) * Math.PI / 180);
+	ctx.translate(0, 40);
+	ctx.scale(1, 4);
+	ctx.strokeStyle = "yellow";
+	var oldLineWidth = ctx.lineWidth;
+	ctx.lineWidth = 1;
+	ctx.beginPath();
+	ctx.arc(0, 0, 15, 0, Math.PI * 2, false);
+	ctx.stroke();
+	ctx.lineWidth = oldLineWidth;
+	ctx.restore();
+}
+
 return {
 	drawOctopus: drawOctopus,
 	getImages: getImages,
 	getLegsInfo: getLegsInfo,
 	getOptions: getOptions,
+	markLeg: markLeg,
 
 	dummy: null  // marks end.
 };

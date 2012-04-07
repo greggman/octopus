@@ -35,6 +35,8 @@ var g_statusElem;
 var g_images;
 var g_canvas;
 var g_ctx;
+var g_team = undefined;
+var g_leg = undefined;
 
 var OPTIONS = {
 };
@@ -53,8 +55,11 @@ function debug(msg) {
 function main() {
   g_canvas = $("canvas");
   g_ctx = g_canvas.getContext("2d");
-  g_images = OctoRender.getImages();
-  LoadImages(g_images, renderOctopus);
+  var images = OctoRender.getImages();
+  LoadImages(images, function() {
+		g_images = images;
+		updateOctopus();
+	});
   debug("start");
   connect();
   window.addEventListener('mousedown', press, false);
@@ -77,10 +82,21 @@ function renderOctopus() {
 		clock: 0
 	};
 	var ctx = g_ctx;
+	ctx.clearRect(0, 0, g_canvas.width, g_canvas.height);
 	ctx.save();
 	ctx.translate(g_canvas.width * 0.5, g_canvas.height * 0.5);
   OctoRender.drawOctopus(ctx, drawInfo);
+
+	if (g_leg !== undefined) {
+		OctoRender.markLeg(ctx, drawInfo, g_leg);
+	}
 	ctx.restore();
+}
+
+function updateOctopus() {
+	if (g_images) {
+		renderOctopus();
+	}
 }
 
 function press() {
@@ -110,6 +126,10 @@ function connect() {
   g_socket.on('disconnect', disconnected);
 }
 
+function disconnect() {
+	g_socket.disconnect();
+}
+
 function connected() {
   g_statusElem.innerHTML = "connected";
   g_statusElem.style.backgroundColor = "green";
@@ -137,6 +157,11 @@ function processMessage(msg) {
       connect();
     }
     break;
+	case 'id':
+		g_team = msg.teamId;
+		g_leg  = msg.legId;
+		updateOctopus();
+		break;
   }
 }
 

@@ -324,6 +324,7 @@ function processMessage(client, message) {
     case 'broadcast':
       message.cmd = 'update';
       for (var id in g_clients) {
+        sys.print("sending to: " + id);
         g_clients[id].emit('message', message);
       }
       break;

@@ -1,3 +1,4 @@
+
 var g_socket;
 var g_statusElem;
 var g_numPlayers = 0;
@@ -108,7 +109,7 @@ function startPlayer(id) {
   }
   ++g_numPlayers;
   updateOnlineStatus();
-  g_players[id] = new Player(g_freeSlots.shift());
+  g_players[id] = new Player(id, g_freeSlots.shift());
 }
 
 function updatePlayer(id, msg) {
@@ -129,10 +130,6 @@ function removePlayer(id) {
   }
 }
 
-function Player(slotId) {
-  this.slotId = slotId;
-}
-
 g_slotRemap = [
   5,
   2,
@@ -144,11 +141,29 @@ g_slotRemap = [
   3
 ];
 
+function getLegId(slotId) {
+  return g_slotRemap[slotId % 8];
+}
+
+function getTeamId(slotId) {
+  return Math.floor(slotId / 8);
+}
+
+function Player(clientId, slotId) {
+  this.slotId = slotId;
+  this.clientId = clientId
+  this.send({
+    cmd: 'id',
+    legId: getLegId(this.slotId),
+    teamId: getTeamId(this.slotId)
+  });
+}
+
 Player.prototype.update = function(msg) {
   //log("player slot:" + this.slotId + ", msg");
   switch (msg.cmd) {
   case 'press':
-    InputSystem.addEvent(Math.floor(this.slotId / 8), g_slotRemap[this.slotId % 8]);
+    InputSystem.addEvent(getTeamId(this.slotId), getLegId(this.slotId));
     break;
   }
 };
@@ -156,3 +171,8 @@ Player.prototype.update = function(msg) {
 Player.prototype.removeFromGame = function() {
   g_freeSlots.push(this.slotId);
 };
+
+Player.prototype.send = function(cmd) {
+  sendCmd("client", this.clientId, cmd);
+};
+
