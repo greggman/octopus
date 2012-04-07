@@ -32,9 +32,12 @@ window.onload = main;
 
 var g_socket;
 var g_statusElem;
+var g_origImages;
 var g_images;
 var g_canvas;
 var g_ctx;
+var g_hue = 0;
+var g_oldHue = 0;
 var g_team = undefined;
 var g_leg = undefined;
 
@@ -57,7 +60,7 @@ function main() {
   g_ctx = g_canvas.getContext("2d");
   var images = OctoRender.getImages();
   LoadImages(images, function() {
-		g_images = images;
+		g_origImages = images;
 		updateOctopus();
 	});
   debug("start");
@@ -93,8 +96,43 @@ function renderOctopus() {
 	ctx.restore();
 }
 
+function processImages(callback) {
+	var count = 0;
+	var newImages = {};
+	for (var name in g_origImages) {
+		var image = g_origImages[name].img;
+		if (g_hue) {
+			++count;
+			ImageProcess.adjustHSV(image, g_hue, 0, 0, function(name) {
+				return function(img) {
+					newImages[name] = {img: img};
+					--count;
+					checkDone();
+				}
+			}(name));
+		} else {
+			newImages[name] = {img: image};
+		}
+	}
+
+	function checkDone() {
+		if (count == 0) {
+			g_oldHue = g_hue;
+			g_images = newImages;
+			callback();
+		}
+	}
+
+	checkDone();
+}
+
 function updateOctopus() {
-	if (g_images) {
+	if (!g_images || g_oldHue != g_hue) {
+		if (g_origImages && g_team !== undefined) {
+			processImages(updateOctopus);
+		}
+	}
+	if (g_images && g_leg !== undefined) {
 		renderOctopus();
 	}
 }
@@ -160,6 +198,7 @@ function processMessage(msg) {
 	case 'id':
 		g_team = msg.teamId;
 		g_leg  = msg.legId;
+		g_hue  = msg.hue;
 		updateOctopus();
 		break;
   }

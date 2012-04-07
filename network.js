@@ -17,8 +17,8 @@ function connect() {
   if (OPTIONS.battle) {
     var numInputs = OPTIONS.numOctopi * 8;
     for (var ii = 0; ii < numInputs; ++ii) {
-      var side = ii % 2;
-      var slot = Math.floor(ii / 2);
+      var side = ii % OPTIONS.numOctopi;
+      var slot = Math.floor(ii / OPTIONS.numOctopi);
       g_freeSlots.push(side * 8 + slot);
     }
   } else {
@@ -152,10 +152,12 @@ function getTeamId(slotId) {
 function Player(clientId, slotId) {
   this.slotId = slotId;
   this.clientId = clientId
+  var teamId = getTeamId(this.slotId);
   this.send({
     cmd: 'id',
     legId: getLegId(this.slotId),
-    teamId: getTeamId(this.slotId)
+    teamId: teamId,
+    hue: g_octopi[teamId].drawInfo.hue
   });
 }
 
