@@ -243,9 +243,13 @@ function main() {
     	timer: 0
     };
     octopus.setLegs(OctoRender.getLegsInfo());
-    octopus.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
+		var r = 150;
+		var a = Math.PI * 2 * ii / g_octopi.length;
+		var x = g_canvas.width / 2 + Math.sin(a) * r;
+		var y = g_canvas.width / 2 + Math.cos(a) * r;
+    octopus.setInfo(x, y, 0);
 		octopus.drawInfo = {
-			hue: (ii < 10) ? (((1 - ii * 0.2) % 1) + (ii < 5 ? 0 : 0.1)) : Math.random(),
+			hue: chooseHue(ii),
 			images: images,
 			legsInfo: octopus.getLegsInfo(),
 			legMovement: octopus.legMovement,
@@ -258,6 +262,17 @@ function main() {
   }
 
   MakeLevel();
+
+	function chooseHue(ii) {
+		var hue = (1 - ii * 0.2) % 1;
+		if (ii % 10 >= 5) {
+			hue += 0.1;
+		}
+		if (ii % 20 >= 10) {
+			hue += 0.05;
+		}
+		return hue;
+	}
 
   var then = getTime();
   function mainLoop() {
@@ -680,8 +695,7 @@ function update(elapsedTime, ctx) {
     ctx.rotate(octoInfo.rotation);
 
 		drawInfo.hasLost = HasLost;
-		drawInfo.clock = g_clock;
-    // drawCircle(ctx, 0, 0, 100, "rgb(200,0,255)");
+		drawInfo.clock = g_clock + jj;
     // only follow the octopus if you haven't yet lost
     if(HasLost)
     {
