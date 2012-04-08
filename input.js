@@ -78,6 +78,7 @@ InputSystem = (function(){
     case '=': addEvent(7, 2); break;
     case '6': addEvent(8, 6); break;
     case '5': addEvent(9, 2); break;
+    case ' ': addEvent(randInt(g_octopi.length), randInt(8)); break;
     }
   }, false);
 
