@@ -622,7 +622,7 @@ function update(elapsedTime, ctx) {
 		}
 		var dx = maxX - minX;
 		var dy = maxY - minY;
-		var centerX = minX + dy * 0.5;
+		var centerX = minX + dx * 0.5;
 		var centerY = minY + dy * 0.5;
 
     g_heightScale = g_canvas.clientWidth / g_canvas.width;
@@ -670,83 +670,84 @@ function update(elapsedTime, ctx) {
   drawBackground(ctx);
 
   if (g_gameState == "play" || g_gameState == "gameover") {
+		ctx.save();
+		ctx.translate(-g_scrollIntX, -g_scrollIntY);
 
-  ctx.save();
-  ctx.translate(-g_scrollIntX, -g_scrollIntY);
+		drawObstacles(ctx);
+		drawCollectibles(ctx);
 
-  if (OPTIONS.battle && OPTIONS.debug) {
-    drawCircle(ctx, otherX, otherY, 10, "yellow");
-    drawCircle(ctx, centerX, centerY, 5, "green");
-  }
+		for (var jj = 0; jj < g_octopi.length; ++jj) {
+			var octopus = g_octopi[jj];
+			var octoInfo = octopus.getInfo();
+			var legMovement = octopus.legMovement;
+			var legBackSwing = octopus.legBackSwing;
+			var expression = octopus.expression;
+			var drawInfo = octopus.drawInfo;
+			ctx.save();
+			ctx.translate(0, octoInfo.y);
+			ctx.translate(octoInfo.x, 0);
+			ctx.rotate(octoInfo.rotation);
 
-  drawObstacles(ctx);
-  drawCollectibles(ctx);
-
-  for (var jj = 0; jj < g_octopi.length; ++jj) {
-    var octopus = g_octopi[jj];
-    var octoInfo = octopus.getInfo();
-    var legMovement = octopus.legMovement;
-    var legBackSwing = octopus.legBackSwing;
-    var expression = octopus.expression;
-		var drawInfo = octopus.drawInfo;
-    ctx.save();
-    ctx.translate(0, octoInfo.y);
-    ctx.translate(octoInfo.x, 0);
-    ctx.rotate(octoInfo.rotation);
-
-		drawInfo.hasLost = HasLost;
-		drawInfo.clock = g_clock + jj;
-    // only follow the octopus if you haven't yet lost
-    if(HasLost)
-    {
-			drawInfo.x = 0;
-			drawInfo.y = -drawInfo.deathAnimDistance;
-			drawInfo.rotation = 0;
-			//make the octopus fly up
-			OctoRender.drawOctopus(ctx, drawInfo);
-			if(drawInfo.deathAnimDistance < 500)
+			drawInfo.hasLost = HasLost;
+			drawInfo.clock = g_clock + jj;
+			// only follow the octopus if you haven't yet lost
+			if(HasLost)
 			{
-				drawInfo.deathAnimDistance = drawInfo.deathAnimDistance + 4;
+				drawInfo.x = 0;
+				drawInfo.y = -drawInfo.deathAnimDistance;
+				drawInfo.rotation = 0;
+				//make the octopus fly up
+				OctoRender.drawOctopus(ctx, drawInfo);
+				if(drawInfo.deathAnimDistance < 500)
+				{
+					drawInfo.deathAnimDistance = drawInfo.deathAnimDistance + 4;
+				}
+				expression.timer = 100;
+				ctx.restore();
 			}
-			expression.timer = 100;
+			else
+			{
+				drawInfo.x = 0;
+				drawInfo.y = 0;
+				drawInfo.rotation = 0;
+				OctoRender.drawOctopus(ctx, drawInfo);
+			}
+			//change expression
+			if(expression.timer > 0)
+			{
+			expression.timer--;
+			}
+			else
+			{
+			expression.timer = 0;
+			expression.img = drawInfo.images.bodyNormal;
+			}
+			var legsInfo = octopus.getLegsInfo();
+			for (var ii = 0; ii < legsInfo.length; ++ii) {
+				var legInfo = legsInfo[ii];
+				//start leg animation
+				if(legInfo.upTime > g_clock) {
+					legMovement[ii] = Math.min(OPTIONS.LEG_SCRUNCH, legMovement[ii] + OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime);
+				} else {
+					legMovement[ii] = Math.max(0, legMovement[ii] - OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime);
+				}
+			}
+			//increment leg animation
+			if (OPTIONS.debug) {
+				drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+			}
 			ctx.restore();
-    }
-    else
-    {
-			drawInfo.x = 0;
-			drawInfo.y = 0;
-			drawInfo.rotation = 0;
-			OctoRender.drawOctopus(ctx, drawInfo);
-    }
-    //change expression
-    if(expression.timer > 0)
-    {
-  	expression.timer--;
-    }
-    else
-    {
-  	expression.timer = 0;
-  	expression.img = drawInfo.images.bodyNormal;
-    }
-    var legsInfo = octopus.getLegsInfo();
-    for (var ii = 0; ii < legsInfo.length; ++ii) {
-			var legInfo = legsInfo[ii];
-			//start leg animation
-			if(legInfo.upTime > g_clock) {
-				legMovement[ii] = Math.min(OPTIONS.LEG_SCRUNCH, legMovement[ii] + OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime);
-			} else {
-				legMovement[ii] = Math.max(0, legMovement[ii] - OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime);
-			}
 		}
-		//increment leg animation
-    if (OPTIONS.debug) {
-      drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
-    }
-    ctx.restore();
-  }
 
-  InkSystem.drawInks(ctx, elapsedTime);
-  ctx.restore(); // scroll
+		InkSystem.drawInks(ctx, elapsedTime);
+
+		if (OPTIONS.battle && OPTIONS.debug) {
+			ctx.strokeStyle = "white";
+			ctx.strokeRect(minX, minY, dx, dy);
+			drawCircle(ctx, centerX, centerY, 5, "white");
+		}
+
+		ctx.restore(); // scroll
 
   } // endif g_gamestate
 
