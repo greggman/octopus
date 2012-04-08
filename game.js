@@ -245,7 +245,7 @@ function main() {
     octopus.setLegs(OctoRender.getLegsInfo());
     octopus.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
 		octopus.drawInfo = {
-			hue: (1 - ii * 0.2) % 1,
+			hue: ((1 - ii * 0.2) % 1) + (ii < 5 ? 0 : 0.1),
 			images: images,
 			legsInfo: octopus.getLegsInfo(),
 			legMovement: octopus.legMovement,

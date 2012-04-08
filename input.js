@@ -73,6 +73,11 @@ InputSystem = (function(){
     case '1': addEvent(2, 6); break;
     case '2': addEvent(3, 2); break;
     case '0': addEvent(4, 6); break;
+    case '9': addEvent(5, 2); break;
+    case '-': addEvent(6, 6); break;
+    case '=': addEvent(7, 2); break;
+    case '6': addEvent(8, 6); break;
+    case '5': addEvent(9, 2); break;
     }
   }, false);
 
