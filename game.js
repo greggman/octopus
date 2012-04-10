@@ -30,10 +30,6 @@
  */
 window.onload = main;
 
-var HasLost = false;
-var DistanceTraveled = 0;
-var PrevPos = {x: 0, y: 0};
-var health = 9;
 var g_canvas;
 var g_ctx;
 var g_clock = 0;
@@ -235,8 +231,12 @@ function main() {
   for (var ii = 0; ii < g_octopi.length; ++ii) {
     var octopus = g_octopi[ii];
 		var images = OctoRender.getImages();
+		octopus.health = 9;
+		octopus.hasLost = false;
+		octopus.distanceTraveled = 0;
     octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
     octopus.legBackSwing = [false, false, false, false, false, false, false, false];
+		octopus.prevPos = {x: 0, y: 0};
     octopus.expression =
     {
     	img: images.bodyNormal,
@@ -402,7 +402,7 @@ function CheckCollisions() {
           InkSystem.startInk(dx / 2, dy / 2);
           audio.play_sound('ouch');
           audio.play_sound('urchin');
-          health = health - 3;//take damage
+          octopus.health -= 3;//take damage
           //change expression
           octopus.expression.img = octopus.drawInfo.images.bodyOw;
           octopus.expression.timer = 35;
@@ -474,9 +474,9 @@ function drawImageCentered(ctx, img, x, y) {
   ctx.restore();
 }
 
-function drawHealthHUD(x, y, ctx)
+function drawHealthHUD(ctx, octopus, x, y)
 {
-	var hpCounter = health;
+	var hpCounter = octopus.health;
 	ctx.save();
 	ctx.translate(x, y);
 	for (var ii = 0; ii < 3; ii++)
@@ -582,28 +582,27 @@ function update(elapsedTime, ctx) {
 	}
 
 	//check losing state
-	if(health <= 0)
+	if(g_octopi[0].health <= 0)
 	{
 		InputSystem.stopInput();
-		HasLost = true;
+		g_octopi[0].hasLost = true;
 		g_gameState = 'gameover';
 	}
 
   CheckCollisions();
   CheckCollection();
-  //don't move the octopus if it's dead
-  if(!HasLost)
-  {
-    for (var jj = 0; jj < g_octopi.length; ++jj) {
-      g_octopi[jj].update(elapsedTime);
-    }
-  }
-  var octoInfo = g_octopi[0].getInfo();
+	for (var jj = 0; jj < g_octopi.length; ++jj) {
+		var octopus = g_octopi[jj];
+		if (!octopus.hasLost) {
+			octopus.update(elapsedTime);
+			//track score
+			var octoInfo = octopus.getInfo();
+			octopus.distanceTraveled += ((octoInfo.y - octopus.prevPos.y) / 10) | 0;
+			octopus.prevPos.x = octoInfo.x;
+			octopus.prevPos.y = octoInfo.y;
+		}
+	}
   
-  //track score
-  DistanceTraveled += ((octoInfo.y - PrevPos.y) / 10) | 0;
-  PrevPos.x = octoInfo.x;
-  PrevPos.y = octoInfo.y;
 
   ctx.save();
 
@@ -654,6 +653,7 @@ function update(elapsedTime, ctx) {
 
     ctx.scale(g_baseScale, g_baseScale * g_heightScale);
   } else {
+    var octoInfo = g_octopi[0].getInfo();
     var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
     var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
 
@@ -688,10 +688,10 @@ function update(elapsedTime, ctx) {
 			ctx.translate(octoInfo.x, 0);
 			ctx.rotate(octoInfo.rotation);
 
-			drawInfo.hasLost = HasLost;
+			drawInfo.hasLost = octopus.hasLost;
 			drawInfo.clock = g_clock + jj;
 			// only follow the octopus if you haven't yet lost
-			if(HasLost)
+			if(drawInfo.hasLost)
 			{
 				drawInfo.x = 0;
 				drawInfo.y = -drawInfo.deathAnimDistance;
@@ -752,16 +752,16 @@ function update(elapsedTime, ctx) {
   } // endif g_gamestate
 
   if (g_gameState == "play" || g_gameState == "gameover") {
-	drawHealthHUD(20, 20, ctx);//hud should follow octo translate but not rotation
+		drawHealthHUD(ctx, g_octopi[0], 20, 20);
   }
-  if(HasLost)
+  if(g_octopi[0].hasLost)
   {
 	//display ending splash screen
 	drawImageCentered(ctx, g_images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 5);
 	drawImageCentered(ctx, g_images.playAgain.img, g_canvas.width / 2, g_canvas.height / 5 + 150);
 	ctx.font = "20pt monospace";
     ctx.fillStyle = "white";
-	ctx.fillText("You crawled "+DistanceTraveled+" tentacles before exploding!",
+	ctx.fillText("You crawled "+g_octopi[0].distanceTraveled+" tentacles before exploding!",
 		g_canvas.width / 4.6, g_canvas.height / 3 + 100);
   }
 
