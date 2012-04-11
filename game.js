@@ -50,204 +50,218 @@ var g_printMsgs = [];
 var g_gameState = 'title';
 var OPTIONS = {
 	numOctopi: 2,
-  LEG_SCRUNCH: 5,
-  LEG_SCRUNCH_SPEED: 90,
-  LEG_UNSCRUNCH_SPEED: 20,
-  LEVEL_WIDTH: 1024,
-  SIDE_LIMIT: 100,
-  CAMERA_CHASE_SPEED: 0.2,
-  OCTOPUS_RADIUS: 85,
-  INK_DURATION: 1,
-  INK_LEAK_DURATION: 1.5,
-  INK_COUNT: 10,
-  INK_SCALE: 0.3,
-  LEG_FRICTION: 0.98,
-  LEG_ROT_FRICTION: 0.98,
-  LEG_ACCELERATION: 60,
-  LEG_UP_DURATION: 0.8,
-  SHOOT_BACK_VELOCITY: -500,
-  URCHIN_SCALE1: .5,
-  URCHIN_SCALE2: .8,
-  COLLECTIBLE_SCALE: .5,
-  URCHIN_SPAWN_RATE: .24,
+	LEG_SCRUNCH: 5,
+	LEG_SCRUNCH_SPEED: 90,
+	LEG_UNSCRUNCH_SPEED: 20,
+	LEVEL_WIDTH: 1024,
+	SIDE_LIMIT: 100,
+	CAMERA_CHASE_SPEED: 0.2,
+	OCTOPUS_RADIUS: 85,
+	INK_DURATION: 1,
+	INK_LEAK_DURATION: 1.5,
+	INK_COUNT: 10,
+	INK_SCALE: 0.3,
+	LEG_FRICTION: 0.98,
+	LEG_ROT_FRICTION: 0.98,
+	LEG_ACCELERATION: 60,
+	LEG_UP_DURATION: 0.8,
+	SHOOT_BACK_VELOCITY: -500,
+	URCHIN_SCALE1: .5,
+	URCHIN_SCALE2: .8,
+	COLLECTIBLE_SCALE: .5,
+	URCHIN_SPAWN_RATE: .24,
 };
 
 MergeOptions(OPTIONS, OctoRender.getOptions());
 getURLOptions(OPTIONS);
 
-function print(msg) {
-  if (OPTIONS.debug) {
-    g_printMsgs.push(msg);
-  }
+function print(msg)
+{
+	if (OPTIONS.debug)
+	{
+		g_printMsgs.push(msg);
+	}
 }
 
-function drawPrint(ctx) {
-  ctx.font = "10pt monospace";
-  ctx.fillStyle = "white";
-  for (var ii = 0; ii < g_printMsgs.length; ++ii) {
-    ctx.fillText(g_printMsgs[ii], 10, ii * 15 + 20);
-  }
-  g_printMsgs = [];
+function drawPrint(ctx)
+{
+	ctx.font = "10pt monospace";
+	ctx.fillStyle = "white";
+	for (var ii = 0; ii < g_printMsgs.length; ++ii)
+	{
+		ctx.fillText(g_printMsgs[ii], 10, ii * 15 + 20);
+	}
+	g_printMsgs = [];
 }
 
 // return int from 0 to range - 1
-function randInt(range) {
-  return Math.floor(Math.random() * range);
+function randInt(range)
+{
+	return Math.floor(Math.random() * range);
 }
 
-function resizeCanvas() {
-  if (g_canvas.height != g_canvas.clientHeight) {
-    g_canvas.height = g_canvas.clientHeight;
-  }
+function resizeCanvas()
+{
+	if (g_canvas.height != g_canvas.clientHeight)
+	{
+		g_canvas.height = g_canvas.clientHeight;
+	}
 }
 
 var g_images = {
-    urchin01:
-    {
-        url: "images/urchin1.png"
-    },
-    urchin02:
-    {
-        url: "images/urchin2.png"
-    },
-    ink01:
-    {
-        url: "images/ink01.png"
-    },
-    ink02:
-    {
-        url: "images/ink02.png"
-    },
-    background:
-    {
-        url: "images/BG_tile.png"
-    },
-		collectible:
-		{
-			url: "images/inkdrop.png"
-		},
-		health0:
-		{
-			url: "images/inkbottle_1.png"
-		},
-		health1:
-		{
-			url: "images/inkbottle_2.png"
-		},
-		health2:
-		{
-			url: "images/inkbottle_3.png"
-		},
-		health3:
-		{
-			url: "images/inkbottle_full .png"
-		},
-		playAgain:
-		{
-			url: "images/playAgainButton.png"
-		},
-		outOfInk:
-		{
-			url: "images/OutofInk.png"
-		},
-		title:
-		{
-			url: "images/title.png"
-		},
-		tutorial:
-		{
-			url: "images/tutorial.png"
-		},
-		play:
-		{
-			url: "images/playbutton.png"
-		}
+	urchin01:
+	{
+		url: "images/urchin1.png"
+	},
+	urchin02:
+	{
+		url: "images/urchin2.png"
+	},
+	ink01:
+	{
+		url: "images/ink01.png"
+	},
+	ink02:
+	{
+		url: "images/ink02.png"
+	},
+	background:
+	{
+		url: "images/BG_tile.png"
+	},
+	collectible:
+	{
+		url: "images/inkdrop.png"
+	},
+	health0:
+	{
+		url: "images/inkbottle_1.png"
+	},
+	health1:
+	{
+		url: "images/inkbottle_2.png"
+	},
+	health2:
+	{
+		url: "images/inkbottle_3.png"
+	},
+	health3:
+	{
+		url: "images/inkbottle_full .png"
+	},
+	playAgain:
+	{
+		url: "images/playAgainButton.png"
+	},
+	outOfInk:
+	{
+		url: "images/OutofInk.png"
+	},
+	title:
+	{
+		url: "images/title.png"
+	},
+	tutorial:
+	{
+		url: "images/tutorial.png"
+	},
+	play:
+	{
+		url: "images/playbutton.png"
+	}
 };
 
 Obstacles = [
-  {name:"urchin01", radius: 125, scale: OPTIONS.URCHIN_SCALE1},//150 original
-  {name:"urchin02", radius: 125, scale: OPTIONS.URCHIN_SCALE2}//scale should be .4 and .8
-];
+			{name:"urchin01", radius: 125, scale: OPTIONS.URCHIN_SCALE1},//150 original
+			{name:"urchin02", radius: 125, scale: OPTIONS.URCHIN_SCALE2}//scale should be .4 and .8
+			];
 
 Sounds = {
-  ouch: {
-    filename: "sounds/hit.wav",
-    samples: 3
-  },
-  swim: {
-    filename: "sounds/swim.mp3",
-    samples: 8
-  },
-  eat: {
-    filename: "sounds/eat.wav",
-    samples: 6
-  },
-  urchin: {
-    filename: "sounds/urchin.wav",
-    samples: 2
-  },
+	ouch: {
+		filename: "sounds/hit.wav",
+		samples: 3
+	},
+	swim: {
+		filename: "sounds/swim.mp3",
+		samples: 8
+	},
+	eat: {
+		filename: "sounds/eat.wav",
+		samples: 6
+	},
+	urchin: {
+		filename: "sounds/urchin.wav",
+		samples: 2
+	},
 };
 
-function main() {
-  connect();
-  var requestId;
-  g_canvas = document.getElementById("canvas");
-  resizeCanvas();
-  window.addEventListener('resize', resize, true);
-  window.addEventListener('blur', function() {
-		if (!OPTIONS.noPause) {
+function main()
+{
+	connect();
+	var requestId;
+	g_canvas = document.getElementById("canvas");
+	resizeCanvas();
+	window.addEventListener('resize', resize, true);
+	window.addEventListener('blur', function(){
+		if (!OPTIONS.noPause){
 			pauseGame();
 		}
 	}, true);
-  window.addEventListener('focus', function() {
-		if (!OPTIONS.noPause) {
+	window.addEventListener('focus', function(){
+		if (!OPTIONS.noPause){
 			resumeGame();
 		}
 	}, true);
-  g_ctx = g_canvas.getContext("2d");
+	g_ctx = g_canvas.getContext("2d");
 
-	var loader = new Loader(function() {
+	var loader = new Loader(function(){
 		processImages(mainLoop);
 	});
-  loader.loadImages(g_images);
-  if (OPTIONS.battle) {
-		for (var ii = 0; ii < OPTIONS.numOctopi; ++ii) {
+	loader.loadImages(g_images);
+	if (OPTIONS.battle)
+	{
+		for (var ii = 0; ii < OPTIONS.numOctopi; ++ii)
+		{
 			g_octopi.push(new OctopusControl(ii));
 		}
-  } else {
+	}
+	else
+	{
 		g_octopi.push(new OctopusControl(0));
 	}
 
-  if (true) {
-   g_bgm = $('bgm');
-   g_bgm.addEventListener('ended', function() {
-       log("replay");
-       this.currentTime = 0;
-       this.play();
-   }, false);
-  }
-  audio.init(Sounds);
+	if (true)
+	{
+		g_bgm = $('bgm');
+		g_bgm.addEventListener('ended', function(){
+			log("replay");
+			this.currentTime = 0;
+			this.play();
+		}, false);
+	}
+	audio.init(Sounds);
 
-  for (var ii = 0; ii < g_octopi.length; ++ii) {
-    var octopus = g_octopi[ii];
+	for (var ii = 0; ii < g_octopi.length; ++ii)
+	{
+		var octopus = g_octopi[ii];
 		var images = OctoRender.getImages();
 		octopus.health = 9;
 		octopus.hasLost = false;
 		octopus.distanceTraveled = 0;
-    octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
-    octopus.legBackSwing = [false, false, false, false, false, false, false, false];
+		octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
+		octopus.legBackSwing = [false, false, false, false, false, false, false, false];
 		octopus.prevPos = {x: 0, y: 0};
-    octopus.expression =
-    {
-    	img: images.bodyNormal,
-    	timer: 0
-    };
-    octopus.setLegs(OctoRender.getLegsInfo());
+		octopus.expression =
+		{
+			img: images.bodyNormal,
+			timer: 0
+		};
+		octopus.setLegs(OctoRender.getLegsInfo());
 		var r = 150;
 		var a = Math.PI * 2 * ii / g_octopi.length;
 		var x = g_canvas.width / 2 + Math.sin(a) * r;
 		var y = g_canvas.width / 2 + Math.cos(a) * r;
-    octopus.setInfo(x, y, 0);
+		octopus.setInfo(x, y, 0);
 		octopus.drawInfo = {
 			hue: chooseHue(ii),
 			images: images,
@@ -259,64 +273,77 @@ function main() {
 			deathAnimDistance: 0
 		};
 		loader.loadImages(images);
-  }
+	}
 
-  MakeLevel();
+	MakeLevel();
 
-	function chooseHue(ii) {
+	function chooseHue(ii)
+	{
 		var hue = (1 - ii * 0.2) % 1;
-		if (ii % 10 >= 5) {
+		if (ii % 10 >= 5)
+		{
 			hue += 0.1;
 		}
-		if (ii % 20 >= 10) {
+		if (ii % 20 >= 10)
+		{
 			hue += 0.05;
 		}
 		return hue;
 	}
 
-  var then = getTime();
-  function mainLoop() {
-    var now = getTime();
-    var elapsedTime = Math.min(0.1, now - then);
-    then = now;
-    g_clock += elapsedTime;
+	var then = getTime();
+	function mainLoop()
+	{
+		var now = getTime();
+		var elapsedTime = Math.min(0.1, now - then);
+		then = now;
+		g_clock += elapsedTime;
 
-    update(elapsedTime, g_ctx);
-    drawPrint(g_ctx);
+		update(elapsedTime, g_ctx);
+		drawPrint(g_ctx);
 
-    requestId = requestAnimFrame(mainLoop, g_canvas);
-  }
+		requestId = requestAnimFrame(mainLoop, g_canvas);
+	}
 
-  function resize() {
-    resizeCanvas();
-    update(0.0001, g_ctx);
-  }
+	function resize()
+	{
+		resizeCanvas();
+		update(0.0001, g_ctx);
+	}
 
-  function pauseGame() {
-    if (requestId !== undefined) {
-      cancelRequestAnimFrame(requestId);
-      requestId = undefined;
-    }
-  }
+	function pauseGame()
+	{
+		if (requestId !== undefined)
+		{
+			cancelRequestAnimFrame(requestId);
+			requestId = undefined;
+		}
+	}
 
-  function resumeGame() {
-    if (requestId === undefined) {
-      mainLoop();
-    }
-  }
+	function resumeGame()
+	{
+		if (requestId === undefined)
+		{
+			mainLoop();
+		}
+	}
 
-	function processImages(callback) {
+	function processImages(callback)
+	{
 		var count = 0;
-		for (var ii = 0; ii < g_octopi.length; ++ii) {
+		for (var ii = 0; ii < g_octopi.length; ++ii)
+		{
 			var octopus = g_octopi[ii];
 			var drawInfo = octopus.drawInfo;
-			if (drawInfo.hue) {
+			if (drawInfo.hue)
+			{
 				var octoImages = drawInfo.images;
-				for (var name in octoImages) {
+				for (var name in octoImages)
+				{
 					++count;
 					var image = octoImages[name].img;
-					ImageProcess.adjustHSV(image, drawInfo.hue, 0, 0, function(images, name) {
-						return function(img) {
+					ImageProcess.adjustHSV(image, drawInfo.hue, 0, 0, function(images, name){
+						return function(img){
 							images[name].img = img;
 							--count;
 							checkDone();
@@ -326,8 +353,10 @@ function main() {
 			}
 		}
 
-		function checkDone() {
-			if (count == 0) {
+		function checkDone()
+		{
+			if (count == 0)
+			{
 				callback();
 			}
 		}
@@ -336,23 +365,24 @@ function main() {
 	}
 }
 
-function MakeObstacle(type, x, y) {
-  var obj = {
-    x: x,
-    y: y,
-    type: type,
-  };
-  g_obstacles.push(obj);
+function MakeObstacle(type, x, y)
+{
+	var obj = {
+		x: x,
+		y: y,
+		type: type,
+	};
+	g_obstacles.push(obj);
 };
 
 function MakeCollectible(x, y, radius)
 {
-	var obj = 
+	var obj =
 	{
 		x: x,
 		y: y,
-	    type: {
-		  radius: radius * OPTIONS.COLLECTIBLE_SCALE
+		type: {
+			radius: radius * OPTIONS.COLLECTIBLE_SCALE
 		},
 		radius: radius,
 		isCollected: false
@@ -360,101 +390,111 @@ function MakeCollectible(x, y, radius)
 	g_collectibles.push(obj);
 }
 
-function MakeLevel() {
-  var y = g_canvas.height;
-  var width = g_canvas.width * 0.8;
-  var xOff = Math.floor((g_canvas.width - width) * 0.5);
-  for (var ii = 0; ii < 100; ++ii) {
-	//make obstacle
-    var x = xOff + pseudoRandInt(g_canvas.width);
-    MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
-	OPTIONS.URCHIN_SPAWN_RATE -= .001;
-    y += g_canvas.height * OPTIONS.URCHIN_SPAWN_RATE;
-	//make collectible
-	if(ii % 2 == 0)
+function MakeLevel()
+{
+	var y = g_canvas.height;
+	var width = g_canvas.width * 0.8;
+	var xOff = Math.floor((g_canvas.width - width) * 0.5);
+	for (var ii = 0; ii < 100; ++ii)
 	{
-		MakeCollectible(pseudoRandInt(g_canvas.width), y + 33, g_images.collectible.img.width * .5);//
+		//make obstacle
+		var x = xOff + pseudoRandInt(g_canvas.width);
+		MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
+		OPTIONS.URCHIN_SPAWN_RATE -= .001;
+		y += g_canvas.height * OPTIONS.URCHIN_SPAWN_RATE;
+		//make collectible
+		if (ii % 2 == 0)
+		{
+			MakeCollectible(pseudoRandInt(g_canvas.width), y + 33, g_images.collectible.img.width * .5);//
+		}
 	}
-  }
 }
 
-function CheckCollisions() {
-  g_oldCollision = g_inCollision;
-  g_inCollision = false;
-  for (var jj = 0; jj < g_octopi.length; ++jj) {
-    var octopus = g_octopi[jj];
-    var octoInfo = octopus.getInfo();
-    for (var ii = 0; ii < g_obstacles.length; ++ii) {
-      var obj = g_obstacles[ii];
-      var dx = obj.x - octoInfo.x;
-      var dy = obj.y - octoInfo.y;
-      //ctx.font = "12pt monospace";
-      //ctx.fillStyle = "white";
-      //ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
-      var rad = obj.type.radius * obj.type.scale + OPTIONS.OCTOPUS_RADIUS;
-      var radSq = rad * rad;
-      var distSq = dx * dx + dy * dy;
-      //ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
-      if (distSq < radSq && g_gameState == "play") {
-        g_inCollision = true;
-        if (!g_oldCollision) {
-          octopus.shootBack(obj);
-          InkSystem.startInk(dx / 2, dy / 2);
-          audio.play_sound('ouch');
-          audio.play_sound('urchin');
-          octopus.health -= 3;//take damage
-          //change expression
-          octopus.expression.img = octopus.drawInfo.images.bodyOw;
-          octopus.expression.timer = 35;
-        }
-        break;
-      }
-    }
-  }
+function CheckCollisions()
+{
+	g_oldCollision = g_inCollision;
+	g_inCollision = false;
+	for (var jj = 0; jj < g_octopi.length; ++jj)
+	{
+		var octopus = g_octopi[jj];
+		var octoInfo = octopus.getInfo();
+		for (var ii = 0; ii < g_obstacles.length; ++ii)
+		{
+			var obj = g_obstacles[ii];
+			var dx = obj.x - octoInfo.x;
+			var dy = obj.y - octoInfo.y;
+			//ctx.font = "12pt monospace";
+			//ctx.fillStyle = "white";
+			//ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
+			var rad = obj.type.radius * obj.type.scale + OPTIONS.OCTOPUS_RADIUS;
+			var radSq = rad * rad;
+			var distSq = dx * dx + dy * dy;
+			//ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
+			if (distSq < radSq && g_gameState == "play")
+			{
+				g_inCollision = true;
+				if (!g_oldCollision)
+				{
+					octopus.shootBack(obj);
+					InkSystem.startInk(dx / 2, dy / 2);
+					audio.play_sound('ouch');
+					audio.play_sound('urchin');
+					octopus.health -= 3;//take damage
+					//change expression
+					octopus.expression.img = octopus.drawInfo.images.bodyOw;
+					octopus.expression.timer = 35;
+				}
+				break;
+			}
+		}
+	}
 }
 
 function CheckCollection()
 {
-    for (var jj = 0; jj < g_octopi.length; ++jj) {
-        var octopus = g_octopi[jj];
-    	var octoInfo = octopus.getInfo();
-    	var itemsToRemove = [];
-    	for (var ii = 0; ii < g_collectibles.length; ii++)
-    	{
-    		var obj = g_collectibles[ii];
-    		var dx = obj.x - octoInfo.x;
-    		var dy = obj.y - octoInfo.y;
-    		var rad = obj.radius + OPTIONS.OCTOPUS_RADIUS;
-    		var radSq = rad * rad;
-    		var distSq = dx * dx + dy * dy;
+	for (var jj = 0; jj < g_octopi.length; ++jj)
+	{
+		var octopus = g_octopi[jj];
+		var octoInfo = octopus.getInfo();
+		var itemsToRemove = [];
+		for (var ii = 0; ii < g_collectibles.length; ii++)
+		{
+			var obj = g_collectibles[ii];
+			var dx = obj.x - octoInfo.x;
+			var dy = obj.y - octoInfo.y;
+			var rad = obj.radius + OPTIONS.OCTOPUS_RADIUS;
+			var radSq = rad * rad;
+			var distSq = dx * dx + dy * dy;
 
-    		if(distSq < radSq && !obj.isCollected)
-    		{
-                audio.play_sound('eat');
-    			//collect stuffs!
-    			obj.isCollected = true;
-    			health++;//get healed a little
-    			if(health > 9)
-    			{
-    				health = 9;
-    			}
-    			itemsToRemove.push(ii);
-    			//change expression
-    			octopus.expression.img = octopus.drawInfo.images.bodyHappy;
-    			octopus.expression.timer = 35;
-    		}
-    	}
-    	//remove collected items
-    	for (var ii = 0; ii < itemsToRemove; ii++)
-    	{
-    		g_collectibles.splice(itemsToRemove[ii], 1);
-    	}
-    }
+			if (distSq < radSq && !obj.isCollected)
+			{
+				audio.play_sound('eat');
+				//collect stuffs!
+				obj.isCollected = true;
+				health++;//get healed a little
+				if (health > 9)
+				{
+					health = 9;
+				}
+				itemsToRemove.push(ii);
+				//change expression
+				octopus.expression.img = octopus.drawInfo.images.bodyHappy;
+				octopus.expression.timer = 35;
+			}
+		}
+		//remove collected items
+		for (var ii = 0; ii < itemsToRemove; ii++)
+		{
+			g_collectibles.splice(itemsToRemove[ii], 1);
+		}
+	}
 }
 
 var g_bgPattern;
-function drawBackground(ctx) {
-	if (!g_bgPattern) {
+function drawBackground(ctx)
+{
+	if (!g_bgPattern)
+	{
 		g_bgPattern = ctx.createPattern(g_images.background.img, "repeat");
 	}
 	ctx.save();
@@ -464,14 +504,15 @@ function drawBackground(ctx) {
 	ctx.restore();
 }
 
-function drawImageCentered(ctx, img, x, y) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.translate(-img.width * 0.5, -img.height * 0.5);
-  //ctx.fillStyle = "purple";
-  //ctx.fillRect(0, 0, img.width, img.height);
-  ctx.drawImage(img, 0, 0);
-  ctx.restore();
+function drawImageCentered(ctx, img, x, y)
+{
+	ctx.save();
+	ctx.translate(x, y);
+	ctx.translate(-img.width * 0.5, -img.height * 0.5);
+	//ctx.fillStyle = "purple";
+	//ctx.fillRect(0, 0, img.width, img.height);
+	ctx.drawImage(img, 0, 0);
+	ctx.restore();
 }
 
 function drawHealthHUD(ctx, octopus, x, y)
@@ -481,17 +522,17 @@ function drawHealthHUD(ctx, octopus, x, y)
 	ctx.translate(x, y);
 	for (var ii = 0; ii < 3; ii++)
 	{
-		if(hpCounter >= 3)
+		if (hpCounter >= 3)
 		{
 			ctx.drawImage(g_images.health3.img, 0, 0);
 			hpCounter = hpCounter - 3;
 		}
-		else if(hpCounter >= 2)
+		else if (hpCounter >= 2)
 		{
 			ctx.drawImage(g_images.health2.img, 0, 0);
 			hpCounter = hpCounter - 2;
 		}
-		else if(hpCounter >= 1)
+		else if (hpCounter >= 1)
 		{
 			ctx.drawImage(g_images.health1.img, 0, 0);
 			hpCounter = hpCounter - 1;
@@ -505,24 +546,27 @@ function drawHealthHUD(ctx, octopus, x, y)
 	ctx.restore();
 }
 
-function drawObstacles(ctx) {
-  for (var ii = 0; ii < g_obstacles.length; ++ii) {
-    var obj = g_obstacles[ii];
-    var img = g_images[obj.type.name].img;
-    ctx.save();
-    var scale = 0.9 + Math.sin((g_clock + ii) * 4) * 0.05;
-    scale *= obj.type.scale;//here
-    ctx.translate(obj.x, obj.y);
-    ctx.scale(scale, scale);
-    ctx.save();
-    ctx.translate(-Math.floor(img.width / 2), -Math.floor(img.height / 2));
-    ctx.drawImage(img, 0, 0);
-    ctx.restore();
-    if (OPTIONS.debug) {
-      drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
-    }
-    ctx.restore();
-  }
+function drawObstacles(ctx)
+{
+	for (var ii = 0; ii < g_obstacles.length; ++ii)
+	{
+		var obj = g_obstacles[ii];
+		var img = g_images[obj.type.name].img;
+		ctx.save();
+		var scale = 0.9 + Math.sin((g_clock + ii) * 4) * 0.05;
+		scale *= obj.type.scale;//here
+		ctx.translate(obj.x, obj.y);
+		ctx.scale(scale, scale);
+		ctx.save();
+		ctx.translate(-Math.floor(img.width / 2), -Math.floor(img.height / 2));
+		ctx.drawImage(img, 0, 0);
+		ctx.restore();
+		if (OPTIONS.debug)
+		{
+			drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
+		}
+		ctx.restore();
+	}
 }
 
 function drawCollectibles(ctx)
@@ -530,7 +574,7 @@ function drawCollectibles(ctx)
 	for (var i = 0; i < g_collectibles.length; i++)
 	{
 		var obj = g_collectibles[i];
-		if(!obj.isCollected)
+		if (!obj.isCollected)
 		{
 			ctx.save();
 			var img = g_images.collectible.img;
@@ -541,59 +585,72 @@ function drawCollectibles(ctx)
 			ctx.translate(-Math.floor(img.width / 2), -Math.floor(img.height / 2));
 			ctx.drawImage(img, 0, 0);
 			ctx.restore();
-			if (OPTIONS.debug) {
+			if (OPTIONS.debug)
+			{
 				drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
 			}
 			ctx.restore();
 		}
 	}
-	
+
 }
 
 g_debounceTimer = 0;
 
-function update(elapsedTime, ctx) {
+function update(elapsedTime, ctx)
+{
 	print("");
 	//allow play again if the octopus is dead
 	window.addEventListener('click', handleClick);
-    window.addEventListener('touchstart', handleClick);
+	window.addEventListener('touchstart', handleClick);
 
-    function handleClick(event)
+	function handleClick(event)
 	{
-		if (g_clock < g_debounceTimer) {
-		  return;
+		if (g_clock < g_debounceTimer)
+		{
+			return;
 		}
 
 		g_debounceTimer = g_clock + 0.5;
-		switch (g_gameState) {
+		switch (g_gameState)
+		{
 		case 'title':
-		  g_gameState = 'tutorial';
-		  break;
+			g_gameState = 'tutorial';
+			break;
 		case 'tutorial':
-		  g_gameState = 'play';
-		  InputSystem.startInput();
-		  break;
+			g_gameState = 'play';
+			InputSystem.startInput();
+			break;
 		case 'play':
-		  break;
+			break;
 		case 'gameover':
-		  window.location = window.location;
-		  break;
+			window.location = window.location;
+			break;
 		}
 	}
 
 	//check losing state
-	if(g_octopi[0].health <= 0)
+	if (OPTIONS.battle)
 	{
-		InputSystem.stopInput();
-		g_octopi[0].hasLost = true;
-		g_gameState = 'gameover';
+		// TODO: fill this in for battle mode.
+	}
+	else
+	{
+		if (g_octopi[0].health <= 0)
+		{
+			InputSystem.stopInput();
+			g_octopi[0].hasLost = true;
+			g_gameState = 'gameover';
+		}
 	}
 
-  CheckCollisions();
-  CheckCollection();
-	for (var jj = 0; jj < g_octopi.length; ++jj) {
+	CheckCollisions();
+	CheckCollection();
+	for (var jj = 0; jj < g_octopi.length; ++jj)
+	{
 		var octopus = g_octopi[jj];
-		if (!octopus.hasLost) {
+		if (!octopus.hasLost)
+		{
 			octopus.update(elapsedTime);
 			//track score
 			var octoInfo = octopus.getInfo();
@@ -602,17 +659,19 @@ function update(elapsedTime, ctx) {
 			octopus.prevPos.y = octoInfo.y;
 		}
 	}
-  
 
-  ctx.save();
 
-  if (OPTIONS.battle) {
-    var octoInfo = g_octopi[0].getInfo();
+	ctx.save();
+
+	if (OPTIONS.battle)
+	{
+		var octoInfo = g_octopi[0].getInfo();
 		var minX = octoInfo.x;
 		var minY = octoInfo.y;
 		var maxX = octoInfo.x;
 		var maxY = octoInfo.y;
-		for (var ii = 1; ii < g_octopi.length; ++ii) {
+		for (var ii = 1; ii < g_octopi.length; ++ii)
+		{
 			var octoInfo = g_octopi[ii].getInfo();
 			minX = Math.min(octoInfo.x, minX);
 			minY = Math.min(octoInfo.y, minY);
@@ -624,59 +683,65 @@ function update(elapsedTime, ctx) {
 		var centerX = minX + dx * 0.5;
 		var centerY = minY + dy * 0.5;
 
-    g_heightScale = g_canvas.clientWidth / g_canvas.width;
-    var screenWidth = 1024
-    var screenHeight = g_canvas.height / g_heightScale;
+		g_heightScale = g_canvas.clientWidth / g_canvas.width;
+		var screenWidth = 1024
+		var screenHeight = g_canvas.height / g_heightScale;
 
-    print("sw: " + screenWidth + " sh:" + screenHeight.toFixed(0));
-    print("adx: " + dx.toFixed(0) + " ady: " + dy.toFixed(0));
+		print("sw: " + screenWidth + " sh:" + screenHeight.toFixed(0));
+		print("adx: " + dx.toFixed(0) + " ady: " + dy.toFixed(0));
 
-    var halfScreenWidth = screenWidth / 2;
-    var halfScreenHeight = screenHeight / 2;
+		var halfScreenWidth = screenWidth / 2;
+		var halfScreenHeight = screenHeight / 2;
 
-    g_baseScale = 1;
-    if (dx > halfScreenWidth) {
-      g_baseScale = halfScreenWidth / dx;
-    }
-    if (dy > halfScreenHeight) {
-      var yBaseScale = halfScreenHeight / dy;
-      g_baseScale = Math.min(g_baseScale, yBaseScale);
-    }
+		g_baseScale = 1;
+		if (dx > halfScreenWidth)
+		{
+			g_baseScale = halfScreenWidth / dx;
+		}
+		if (dy > halfScreenHeight)
+		{
+			var yBaseScale = halfScreenHeight / dy;
+			g_baseScale = Math.min(g_baseScale, yBaseScale);
+		}
 
-    print("bs: " + g_baseScale.toFixed(3));
+		print("bs: " + g_baseScale.toFixed(3));
 
-    var targetX = centerX - g_canvas.width / g_baseScale / 2;
-    var targetY = centerY - g_canvas.height / g_baseScale / g_heightScale / 2;
+		var targetX = centerX - g_canvas.width / g_baseScale / 2;
+		var targetY = centerY - g_canvas.height / g_baseScale / g_heightScale / 2;
 
-    g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
-    g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
+		g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
+		g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
 
-    ctx.scale(g_baseScale, g_baseScale * g_heightScale);
-  } else {
-    var octoInfo = g_octopi[0].getInfo();
-    var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
-    var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
+		ctx.scale(g_baseScale, g_baseScale * g_heightScale);
+	}
+	else
+	{
+		var octoInfo = g_octopi[0].getInfo();
+		var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
+		var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
 
-    //g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
-    g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
+		//g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
+		g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
 
-    g_heightScale = g_canvas.clientWidth / g_canvas.width;
-    ctx.scale(1, g_heightScale);
-  }
+		g_heightScale = g_canvas.clientWidth / g_canvas.width;
+		ctx.scale(1, g_heightScale);
+	}
 
 
-  g_scrollIntX = Math.floor(g_scrollX);
-  g_scrollIntY = Math.floor(g_scrollY);
-  drawBackground(ctx);
+	g_scrollIntX = Math.floor(g_scrollX);
+	g_scrollIntY = Math.floor(g_scrollY);
+	drawBackground(ctx);
 
-  if (g_gameState == "play" || g_gameState == "gameover") {
+	if (g_gameState == "play" || g_gameState == "gameover")
+	{
 		ctx.save();
 		ctx.translate(-g_scrollIntX, -g_scrollIntY);
 
 		drawObstacles(ctx);
 		drawCollectibles(ctx);
 
-		for (var jj = 0; jj < g_octopi.length; ++jj) {
+		for (var jj = 0; jj < g_octopi.length; ++jj)
+		{
 			var octopus = g_octopi[jj];
 			var octoInfo = octopus.getInfo();
 			var legMovement = octopus.legMovement;
@@ -691,14 +756,14 @@ function update(elapsedTime, ctx) {
 			drawInfo.hasLost = octopus.hasLost;
 			drawInfo.clock = g_clock + jj;
 			// only follow the octopus if you haven't yet lost
-			if(drawInfo.hasLost)
+			if (drawInfo.hasLost)
 			{
 				drawInfo.x = 0;
 				drawInfo.y = -drawInfo.deathAnimDistance;
 				drawInfo.rotation = 0;
 				//make the octopus fly up
 				OctoRender.drawOctopus(ctx, drawInfo);
-				if(drawInfo.deathAnimDistance < 500)
+				if (drawInfo.deathAnimDistance < 500)
 				{
 					drawInfo.deathAnimDistance = drawInfo.deathAnimDistance + 4;
 				}
@@ -713,27 +778,32 @@ function update(elapsedTime, ctx) {
 				OctoRender.drawOctopus(ctx, drawInfo);
 			}
 			//change expression
-			if(expression.timer > 0)
+			if (expression.timer > 0)
 			{
-			expression.timer--;
+				expression.timer--;
 			}
 			else
 			{
-			expression.timer = 0;
-			expression.img = drawInfo.images.bodyNormal;
+				expression.timer = 0;
+				expression.img = drawInfo.images.bodyNormal;
 			}
 			var legsInfo = octopus.getLegsInfo();
-			for (var ii = 0; ii < legsInfo.length; ++ii) {
+			for (var ii = 0; ii < legsInfo.length; ++ii)
+			{
 				var legInfo = legsInfo[ii];
 				//start leg animation
-				if(legInfo.upTime > g_clock) {
+				if (legInfo.upTime > g_clock)
+				{
 					legMovement[ii] = Math.min(OPTIONS.LEG_SCRUNCH, legMovement[ii] + OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime);
-				} else {
+				}
+				else
+				{
 					legMovement[ii] = Math.max(0, legMovement[ii] - OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime);
 				}
 			}
 			//increment leg animation
-			if (OPTIONS.debug) {
+			if (OPTIONS.debug)
+			{
 				drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
 			}
 			ctx.restore();
@@ -741,7 +811,8 @@ function update(elapsedTime, ctx) {
 
 		InkSystem.drawInks(ctx, elapsedTime);
 
-		if (OPTIONS.battle && OPTIONS.debug) {
+		if (OPTIONS.battle && OPTIONS.debug)
+		{
 			ctx.strokeStyle = "white";
 			ctx.strokeRect(minX, minY, dx, dy);
 			drawCircle(ctx, centerX, centerY, 5, "white");
@@ -749,54 +820,59 @@ function update(elapsedTime, ctx) {
 
 		ctx.restore(); // scroll
 
-  } // endif g_gamestate
+	} // endif g_gamestate
 
-  if (g_gameState == "play" || g_gameState == "gameover") {
+	if (!OPTIONS.battle && (g_gameState == "play" || g_gameState == "gameover"))
+	{
 		drawHealthHUD(ctx, g_octopi[0], 20, 20);
-  }
-  if(g_octopi[0].hasLost)
-  {
-	//display ending splash screen
-	drawImageCentered(ctx, g_images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 5);
-	drawImageCentered(ctx, g_images.playAgain.img, g_canvas.width / 2, g_canvas.height / 5 + 150);
-	ctx.font = "20pt monospace";
-    ctx.fillStyle = "white";
-	ctx.fillText("You crawled "+g_octopi[0].distanceTraveled+" tentacles before exploding!",
-		g_canvas.width / 4.6, g_canvas.height / 3 + 100);
-  }
+	}
 
-  switch (g_gameState) {
-  case 'title':
-	var h = g_canvas.height * 0.5 - (g_images.title.img.height + g_images.play.img.height) * 0.5;
-	h /= g_heightScale;
-	var h = g_canvas.height * 0.5 / g_heightScale;
-	print("")
-	print("gs:" + g_heightScale);
-	print("h:" + h);
-	drawImageCentered(ctx, g_images.title.img, g_canvas.width / 2, g_canvas.height / 4);
-    drawImageCentered(ctx, g_images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
-	break;
-  case 'tutorial':
-	drawImageCentered(ctx, g_images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
-	break;
-  }
+	if (!OPTIONS.battle && g_octopi[0].hasLost)
+	{
+		//display ending splash screen
+		drawImageCentered(ctx, g_images.outOfInk.img, g_canvas.width / 2, g_canvas.height / 5);
+		drawImageCentered(ctx, g_images.playAgain.img, g_canvas.width / 2, g_canvas.height / 5 + 150);
+		ctx.font = "20pt monospace";
+		ctx.fillStyle = "white";
+		ctx.fillText("You crawled "+g_octopi[0].distanceTraveled+" tentacles before exploding!",
+					 g_canvas.width / 4.6, g_canvas.height / 3 + 100);
+	}
 
-  ctx.restore(); // for screen scale
+	switch (g_gameState)
+	{
+	case 'title':
+		var h = g_canvas.height * 0.5 - (g_images.title.img.height + g_images.play.img.height) * 0.5;
+		h /= g_heightScale;
+		var h = g_canvas.height * 0.5 / g_heightScale;
+		print("")
+		print("gs:" + g_heightScale);
+		print("h:" + h);
+		drawImageCentered(ctx, g_images.title.img, g_canvas.width / 2, g_canvas.height / 4);
+		drawImageCentered(ctx, g_images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
+		break;
+	case 'tutorial':
+		drawImageCentered(ctx, g_images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
+		break;
+	}
+
+	ctx.restore(); // for screen scale
 
 }
 
-function drawCircle(ctx, x, y, radius, color) {
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-  ctx.fill();
+function drawCircle(ctx, x, y, radius, color)
+{
+	ctx.fillStyle = color;
+	ctx.beginPath();
+	ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+	ctx.fill();
 }
 
-function drawCircleLine(ctx, x, y, radius, color) {
-  ctx.strokeStyle = color;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-  ctx.stroke();
+function drawCircleLine(ctx, x, y, radius, color)
+{
+	ctx.strokeStyle = color;
+	ctx.beginPath();
+	ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+	ctx.stroke();
 }
 
 function MoveTentacle(tipPosX, tipPosY)
@@ -804,7 +880,7 @@ function MoveTentacle(tipPosX, tipPosY)
 	var motionForce = -2;//magnitude
 	//assumes first segment is the tip of the tentacle
 	//move the tip
-	var newPos = 
+	var newPos =
 	{
 		x: tipPosX - motionForce,
 		y: tipPosY - motionForce
@@ -813,78 +889,78 @@ function MoveTentacle(tipPosX, tipPosY)
 }
 
 InkSystem = (function(){
-  "strict";
-  var inks = [];
-  var inkTime = 0;
-  var inkXOff = 0;
-  var inkYOff = 0;
-  var inkCount = 0;
+	"strict";
+	var inks = [];
+	var inkTime = 0;
+	var inkXOff = 0;
+	var inkYOff = 0;
+	var inkCount = 0;
 
-  function drawInks(ctx, elapsedTime) {
-    var ii;
-    for (ii = 0; ii < inks.length; ++ii) {
-      var ink = inks[ii];
-      if (g_clock < ink.time) {
-        break;
-      }
-    }
-    inks.splice(0, ii);
+	function drawInks(ctx, elapsedTime){
+		var ii;
+		for (ii = 0; ii < inks.length; ++ii){
+			var ink = inks[ii];
+			if (g_clock < ink.time){
+				break;
+			}
+		}
+		inks.splice(0, ii);
 
-    if (inkTime < g_clock && inkCount > 0) {
-      inkTime = g_clock + OPTIONS.INK_LEAK_DURATION / OPTIONS.INK_COUNT;
-      --inkCount;
-      var octoInfo = g_octopi[0].getInfo();
-      birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
-    }
+		if (inkTime < g_clock && inkCount > 0){
+			inkTime = g_clock + OPTIONS.INK_LEAK_DURATION / OPTIONS.INK_COUNT;
+			--inkCount;
+			var octoInfo = g_octopi[0].getInfo();
+			birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
+		}
 
-    var alpha = ctx.globalAlpha;
-    for (var ii = 0; ii < inks.length; ++ii) {
-      var ink = inks[ii];
-      var img = ink.img;
-      ink.rot += ink.rotVel * elapsedTime;
-      var lerp1to0 = (ink.time - g_clock) / OPTIONS.INK_DURATION;
-      var scale = 0.5 + (1 - lerp1to0) * OPTIONS.INK_SCALE;
-      ctx.save();
-      ctx.translate(ink.x, ink.y);
-	  ctx.rotate(ink.rot);
-      ctx.scale(scale, scale);
-      ctx.translate(img.width / -2, img.height / -2);
-      ctx.globalAlpha = lerp1to0;
-	  ctx.drawImage(img, 0, 0);
-      ctx.restore();
-    }
-    g_canvas.globalAlpha = alpha;
-  }
+		var alpha = ctx.globalAlpha;
+		for (var ii = 0; ii < inks.length; ++ii){
+			var ink = inks[ii];
+			var img = ink.img;
+			ink.rot += ink.rotVel * elapsedTime;
+			var lerp1to0 = (ink.time - g_clock) / OPTIONS.INK_DURATION;
+			var scale = 0.5 + (1 - lerp1to0) * OPTIONS.INK_SCALE;
+			ctx.save();
+			ctx.translate(ink.x, ink.y);
+			ctx.rotate(ink.rot);
+			ctx.scale(scale, scale);
+			ctx.translate(img.width / -2, img.height / -2);
+			ctx.globalAlpha = lerp1to0;
+			ctx.drawImage(img, 0, 0);
+			ctx.restore();
+		}
+		g_canvas.globalAlpha = alpha;
+	}
 
-  var inkImages = [
-    "ink01",
-    "ink02"
-  ];
+	var inkImages = [
+		"ink01",
+		"ink02"
+	];
 
-  function birthInk(x, y) {
-    var ink = {
-      x: x,
-      y: y,
-      img: g_images[inkImages[randInt(inkImages.length)]].img,
-      rot: Math.random() * Math.PI * 2,
-      rotVel: (Math.random() - 0.5) * Math.PI,
-      time: g_clock + OPTIONS.INK_DURATION
-    };
-    inks.push(ink);
-  }
+	function birthInk(x, y){
+		var ink = {
+			x: x,
+			y: y,
+			img: g_images[inkImages[randInt(inkImages.length)]].img,
+			rot: Math.random() * Math.PI * 2,
+			rotVel: (Math.random() - 0.5) * Math.PI,
+			time: g_clock + OPTIONS.INK_DURATION
+		};
+		inks.push(ink);
+	}
 
-  function startInk(x, y) {
-    inkXOff = x;
-    inkYOff = y;
-    inkCount = OPTIONS.INK_COUNT;
-  }
+	function startInk(x, y){
+		inkXOff = x;
+		inkYOff = y;
+		inkCount = OPTIONS.INK_COUNT;
+	}
 
-  return {
-    birthInk: birthInk,
-    drawInks: drawInks,
-    startInk: startInk,
+	return{
+		birthInk: birthInk,
+		drawInks: drawInks,
+		startInk: startInk,
 
-    dummy: undefined
-  }
+		dummy: undefined
+	}
 }());
 
