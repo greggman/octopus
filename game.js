@@ -147,7 +147,7 @@ var g_images = {
 	},
 	health3:
 	{
-		url: "images/inkbottle_full .png"
+		url: "images/inkbottle_full.png"
 	},
 	playAgain:
 	{

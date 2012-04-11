@@ -143,6 +143,22 @@ OctoRender = (function()
 			},
 			legSegment2:{
 				url: "images/octopus_leg2.png"
+			},
+			health0:
+			{
+				url: "images/inkbottle_1.png"
+			},
+			health1:
+			{
+				url: "images/inkbottle_2.png"
+			},
+			health2:
+			{
+				url: "images/inkbottle_3.png"
+			},
+			health3:
+			{
+				url: "images/inkbottle_full.png"
 			}
 		};
 	}
