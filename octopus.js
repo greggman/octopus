@@ -37,10 +37,10 @@ OctoRender = (function()
 			legWaveAmount: 0.1,
 			legWaveSpeed: 2,
 			legWaveOffset: 0.5,
-			LEG_COMBINE_JOINT1: 6,
-			LEG_COMBINE_JOINT2: 6,
-			LEG_COMBINE_JOINT3: 15,
-			LEG_COMBINE_JOINT4: 2
+			legCombineJoint1: 6,
+			legCombineJoint2: 6,
+			legCombineJoint3: 15,
+			legCombineJoint4: 2
 		};
 	}
 
@@ -87,22 +87,22 @@ OctoRender = (function()
 		ctx.drawImage(img, 0, 0);
 		ctx.restore();
 
-		ctx.translate(0, img.height - OPTIONS.LEG_COMBINE_JOINT1);
+		ctx.translate(0, img.height - OPTIONS.legCombineJoint1);
 		var wave = Math.sin((info.clock + legNdx + OPTIONS.legWaveOffset) * OPTIONS.legWaveSpeed) * OPTIONS.legWaveAmount;
 		ctx.rotate(wave + (scrunch * 10) * Math.PI / 180);
 
 		var img = images.legSegment2.img;
 		ctx.save();
-		ctx.translate(-img.width / 2, -OPTIONS.LEG_COMBINE_JOINT2);
+		ctx.translate(-img.width / 2, -OPTIONS.legCombineJoint2);
 		ctx.drawImage(img, 0, 0);
 		ctx.restore();
 
-		ctx.translate(0, img.height - OPTIONS.LEG_COMBINE_JOINT3);
+		ctx.translate(0, img.height - OPTIONS.legCombineJoint3);
 		var wave = Math.sin((info.clock + legNdx + OPTIONS.legWaveOffset * 2) * OPTIONS.legWaveSpeed) * OPTIONS.legWaveAmount;
 		ctx.rotate(wave + (scrunch * -10) * Math.PI / 180);
 
 		var img = images.legTip.img;
-		ctx.translate(-img.width / 2, -OPTIONS.LEG_COMBINE_JOINT4);
+		ctx.translate(-img.width / 2, -OPTIONS.legCombineJoint4);
 		ctx.drawImage(img, 0, 0);
 		ctx.restore();
 		return;

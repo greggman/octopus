@@ -50,26 +50,26 @@ var g_printMsgs = [];
 var g_gameState = 'title';
 var OPTIONS = {
 	numOctopi: 2,
-	LEG_SCRUNCH: 5,
-	LEG_SCRUNCH_SPEED: 90,
-	LEG_UNSCRUNCH_SPEED: 20,
-	LEVEL_WIDTH: 1024,
-	SIDE_LIMIT: 100,
-	CAMERA_CHASE_SPEED: 0.2,
-	OCTOPUS_RADIUS: 85,
-	INK_DURATION: 1,
-	INK_LEAK_DURATION: 1.5,
-	INK_COUNT: 10,
-	INK_SCALE: 0.3,
-	LEG_FRICTION: 0.98,
-	LEG_ROT_FRICTION: 0.98,
-	LEG_ACCELERATION: 60,
-	LEG_UP_DURATION: 0.8,
-	SHOOT_BACK_VELOCITY: -500,
-	URCHIN_SCALE1: .5,
-	URCHIN_SCALE2: .8,
-	COLLECTIBLE_SCALE: .5,
-	URCHIN_SPAWN_RATE: .24,
+	legScrunch: 5,
+	legScrunchSpeed: 90,
+	legUnscrunchSpeed: 20,
+	levelWidth: 1024,
+	sideLimit: 100,
+	cameraChaseSpeed: 0.2,
+	octopusRadius: 85,
+	inkDuration: 1,
+	inkLeakDuration: 1.5,
+	inkCount: 10,
+	inkScale: 0.3,
+	legFriction: 0.98,
+	legRotFriction: 0.98,
+	legAcceleration: 60,
+	legUpDuration: 0.8,
+	shootBackVelocity: -500,
+	urchinScale1: .5,
+	urchinScale2: .8,
+	collectibleScale: .5,
+	urchinSpawnRate: .24,
 };
 
 MergeOptions(OPTIONS, OctoRender.getOptions());
@@ -172,8 +172,8 @@ var g_images = {
 };
 
 Obstacles = [
-			{name:"urchin01", radius: 125, scale: OPTIONS.URCHIN_SCALE1},//150 original
-			{name:"urchin02", radius: 125, scale: OPTIONS.URCHIN_SCALE2}//scale should be .4 and .8
+			{name:"urchin01", radius: 125, scale: OPTIONS.urchinScale1},//150 original
+			{name:"urchin02", radius: 125, scale: OPTIONS.urchinScale2}//scale should be .4 and .8
 			];
 
 Sounds = {
@@ -382,7 +382,7 @@ function MakeCollectible(x, y, radius)
 		x: x,
 		y: y,
 		type: {
-			radius: radius * OPTIONS.COLLECTIBLE_SCALE
+			radius: radius * OPTIONS.collectibleScale
 		},
 		radius: radius,
 		isCollected: false
@@ -400,8 +400,8 @@ function MakeLevel()
 		//make obstacle
 		var x = xOff + pseudoRandInt(g_canvas.width);
 		MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
-		OPTIONS.URCHIN_SPAWN_RATE -= .001;
-		y += g_canvas.height * OPTIONS.URCHIN_SPAWN_RATE;
+		OPTIONS.urchinSpawnRate -= .001;
+		y += g_canvas.height * OPTIONS.urchinSpawnRate;
 		//make collectible
 		if (ii % 2 == 0)
 		{
@@ -426,7 +426,7 @@ function CheckCollisions()
 			//ctx.font = "12pt monospace";
 			//ctx.fillStyle = "white";
 			//ctx.fillText("dx: " + dx + " dy: " + dy, 10, 20);
-			var rad = obj.type.radius * obj.type.scale + OPTIONS.OCTOPUS_RADIUS;
+			var rad = obj.type.radius * obj.type.scale + OPTIONS.octopusRadius;
 			var radSq = rad * rad;
 			var distSq = dx * dx + dy * dy;
 			//ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
@@ -462,7 +462,7 @@ function CheckCollection()
 			var obj = g_collectibles[ii];
 			var dx = obj.x - octoInfo.x;
 			var dy = obj.y - octoInfo.y;
-			var rad = obj.radius + OPTIONS.OCTOPUS_RADIUS;
+			var rad = obj.radius + OPTIONS.octopusRadius;
 			var radSq = rad * rad;
 			var distSq = dx * dx + dy * dy;
 
@@ -578,7 +578,7 @@ function drawCollectibles(ctx)
 		{
 			ctx.save();
 			var img = g_images.collectible.img;
-			var scale = OPTIONS.COLLECTIBLE_SCALE;//here
+			var scale = OPTIONS.collectibleScale;//here
 			ctx.translate(obj.x, obj.y);
 			ctx.scale(scale, scale);
 			ctx.save()
@@ -709,8 +709,8 @@ function update(elapsedTime, ctx)
 		var targetX = centerX - g_canvas.width / g_baseScale / 2;
 		var targetY = centerY - g_canvas.height / g_baseScale / g_heightScale / 2;
 
-		g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
-		g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
+		g_scrollX += (targetX - g_scrollX) * OPTIONS.cameraChaseSpeed;
+		g_scrollY += (targetY - g_scrollY) * OPTIONS.cameraChaseSpeed;
 
 		ctx.scale(g_baseScale, g_baseScale * g_heightScale);
 	}
@@ -720,8 +720,8 @@ function update(elapsedTime, ctx)
 		var targetX = octoInfo.x - g_canvas.width / 2 - g_canvas.width / 4 * Math.sin(octoInfo.rotation);
 		var targetY = octoInfo.y - g_canvas.height / 2 + g_canvas.height / 4 * Math.cos(octoInfo.rotation);
 
-		//g_scrollX += (targetX - g_scrollX) * OPTIONS.CAMERA_CHASE_SPEED;
-		g_scrollY += (targetY - g_scrollY) * OPTIONS.CAMERA_CHASE_SPEED;
+		//g_scrollX += (targetX - g_scrollX) * OPTIONS.cameraChaseSpeed;
+		g_scrollY += (targetY - g_scrollY) * OPTIONS.cameraChaseSpeed;
 
 		g_heightScale = g_canvas.clientWidth / g_canvas.width;
 		ctx.scale(1, g_heightScale);
@@ -794,17 +794,17 @@ function update(elapsedTime, ctx)
 				//start leg animation
 				if (legInfo.upTime > g_clock)
 				{
-					legMovement[ii] = Math.min(OPTIONS.LEG_SCRUNCH, legMovement[ii] + OPTIONS.LEG_SCRUNCH_SPEED * elapsedTime);
+					legMovement[ii] = Math.min(OPTIONS.legScrunch, legMovement[ii] + OPTIONS.legScrunchSpeed * elapsedTime);
 				}
 				else
 				{
-					legMovement[ii] = Math.max(0, legMovement[ii] - OPTIONS.LEG_UNSCRUNCH_SPEED * elapsedTime);
+					legMovement[ii] = Math.max(0, legMovement[ii] - OPTIONS.legUnscrunchSpeed * elapsedTime);
 				}
 			}
 			//increment leg animation
 			if (OPTIONS.debug)
 			{
-				drawCircleLine(ctx, 0, 0, OPTIONS.OCTOPUS_RADIUS, g_inCollision ? "red" : "white");
+				drawCircleLine(ctx, 0, 0, OPTIONS.octopusRadius, g_inCollision ? "red" : "white");
 			}
 			ctx.restore();
 		}
@@ -907,7 +907,7 @@ InkSystem = (function(){
 		inks.splice(0, ii);
 
 		if (inkTime < g_clock && inkCount > 0){
-			inkTime = g_clock + OPTIONS.INK_LEAK_DURATION / OPTIONS.INK_COUNT;
+			inkTime = g_clock + OPTIONS.inkLeakDuration / OPTIONS.inkCount;
 			--inkCount;
 			var octoInfo = g_octopi[0].getInfo();
 			birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
@@ -918,8 +918,8 @@ InkSystem = (function(){
 			var ink = inks[ii];
 			var img = ink.img;
 			ink.rot += ink.rotVel * elapsedTime;
-			var lerp1to0 = (ink.time - g_clock) / OPTIONS.INK_DURATION;
-			var scale = 0.5 + (1 - lerp1to0) * OPTIONS.INK_SCALE;
+			var lerp1to0 = (ink.time - g_clock) / OPTIONS.inkDuration;
+			var scale = 0.5 + (1 - lerp1to0) * OPTIONS.inkScale;
 			ctx.save();
 			ctx.translate(ink.x, ink.y);
 			ctx.rotate(ink.rot);
@@ -944,7 +944,7 @@ InkSystem = (function(){
 			img: g_images[inkImages[randInt(inkImages.length)]].img,
 			rot: Math.random() * Math.PI * 2,
 			rotVel: (Math.random() - 0.5) * Math.PI,
-			time: g_clock + OPTIONS.INK_DURATION
+			time: g_clock + OPTIONS.inkDuration
 		};
 		inks.push(ink);
 	}
@@ -952,7 +952,7 @@ InkSystem = (function(){
 	function startInk(x, y){
 		inkXOff = x;
 		inkYOff = y;
-		inkCount = OPTIONS.INK_COUNT;
+		inkCount = OPTIONS.inkCount;
 	}
 
 	return{

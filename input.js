@@ -185,10 +185,10 @@ var OctopusControl = function(player)
 		var leg = legsInfo[event.direction];
 		if (leg.upTime < g_clock)
 		{
-			leg.upTime = g_clock + OPTIONS.LEG_UP_DURATION;
+			leg.upTime = g_clock + OPTIONS.legUpDuration;
 			var rot = octoInfo.rotation + leg.rotation;
-			xAccel -= Math.sin(rot) * OPTIONS.LEG_ACCELERATION;
-			yAccel += Math.cos(rot) * OPTIONS.LEG_ACCELERATION;
+			xAccel -= Math.sin(rot) * OPTIONS.legAcceleration;
+			yAccel += Math.cos(rot) * OPTIONS.legAcceleration;
 			rAccel += leg.rotAccel;
 			audio.play_sound('swim');
 		}
@@ -245,9 +245,9 @@ var OctopusControl = function(player)
 		octoInfo.x += xVel * elapsedTime;
 		octoInfo.y += yVel * elapsedTime;
 		octoInfo.rotation += rVel * elapsedTime;
-		xVel *= OPTIONS.LEG_FRICTION;
-		yVel *= OPTIONS.LEG_FRICTION;
-		rVel *= OPTIONS.LEG_ROT_FRICTION;
+		xVel *= OPTIONS.legFriction;
+		yVel *= OPTIONS.legFriction;
+		rVel *= OPTIONS.legRotFriction;
 		xAccel = 0;
 		yAccel = 0;
 		rAccel = 0;
@@ -257,7 +257,7 @@ var OctopusControl = function(player)
 		}
 		else
 		{
-			octoInfo.x = Math.max(OPTIONS.SIDE_LIMIT, Math.min(OPTIONS.LEVEL_WIDTH - OPTIONS.SIDE_LIMIT, octoInfo.x));
+			octoInfo.x = Math.max(OPTIONS.sideLimit, Math.min(OPTIONS.levelWidth - OPTIONS.sideLimit, octoInfo.x));
 		}
 	}
 
@@ -278,13 +278,13 @@ var OctopusControl = function(player)
 				dx = 0;
 				dy = 0;
 			}
-			xAccel = OPTIONS.SHOOT_BACK_VELOCITY * dx;
-			yAccel = OPTIONS.SHOOT_BACK_VELOCITY * dy;
+			xAccel = OPTIONS.shootBackVelocity * dx;
+			yAccel = OPTIONS.shootBackVelocity * dy;
 		}
 		else
 		{
 			xAccel = -lastXAccel;
-			yAccel = OPTIONS.SHOOT_BACK_VELOCITY;
+			yAccel = OPTIONS.shootBackVelocity;
 		}
 	}
 
