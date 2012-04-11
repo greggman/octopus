@@ -40,14 +40,18 @@ OctoRender = (function()
 			legCombineJoint1: 6,
 			legCombineJoint2: 6,
 			legCombineJoint3: 15,
-			legCombineJoint4: 2
+			legCombineJoint4: 2,
+			healthXOffset: 40,
+			healthYOffset: -60,
+			healthScale: 0.5,
 		};
 	}
 
 	function drawOctopus(ctx, info)
 	{
 		drawLegs(ctx, info);
-		drawOctopusBody(info.expression.img, info.x, info.y, info.rotation, ctx);
+		drawHealth(ctx, info);
+		drawOctopusBody(ctx, info.expression.img, info.x, info.y, info.rotation);
 	}
 
 	function drawLegs(ctx, info)
@@ -108,14 +112,41 @@ OctoRender = (function()
 		return;
 	}
 
-	function drawOctopusBody(image, x, y, rotation, ctx)
+	var healthIcons = [
+		"health0",
+		"health1",
+		"health2",
+		"health3",
+	];
+
+	function drawHealth(ctx, info)
+	{
+		if(OPTIONS.battle) {
+			var images = info.images;
+			var health = Math.max(0, info.health);
+			var count = healthIcons.length - 1;
+			for (var ii = 0; ii < 3; ++ii) {
+				var ndx = Math.max(0, Math.min(count, health));
+				var iconName = healthIcons[ndx]
+				var icon = images[iconName].img;
+				ctx.save();
+				ctx.translate(OPTIONS.healthXOffset * (ii - 1), OPTIONS.healthYOffset);
+				ctx.scale(OPTIONS.healthScale, OPTIONS.healthScale);
+				drawImageCentered(ctx, icon, 0, 0);
+				ctx.restore();
+				health -= count;
+			}
+		}
+	}
+
+	function drawOctopusBody(ctx, image, x, y, rotation)
 	{
 		x = x - (image.img.width * .5);
 		y = y - (image.img.height * .5);
-		drawItem(image, x, y, rotation, ctx);
+		drawItem(ctx, image, x, y, rotation);
 	}
 
-	function drawItem(image, x, y, rotation, ctx)
+	function drawItem(ctx, image, x, y, rotation)
 	{
 		ctx.save();
 		ctx.rotate(rotation);
@@ -126,22 +157,28 @@ OctoRender = (function()
 	function getImages()
 	{
 		return{
-			bodyHappy:{
+			bodyHappy:
+			{
 				url: "images/octopus_body_yay.png"
 			},
-			bodyNormal:{
+			bodyNormal:
+			{
 				url: "images/octopus_body.png"
 			},
-			bodyOw:{
+			bodyOw:
+			{
 				url: "images/octopus_body_ow.png"
 			},
-			legTip:{
+			legTip:
+			{
 				url: "images/octopus_leg3.png"
 			},
-			legSegment1:{
+			legSegment1:
+			{
 				url: "images/octopus_leg1.png"
 			},
-			legSegment2:{
+			legSegment2:
+			{
 				url: "images/octopus_leg2.png"
 			},
 			health0:

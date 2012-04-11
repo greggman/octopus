@@ -755,6 +755,7 @@ function update(elapsedTime, ctx)
 
 			drawInfo.hasLost = octopus.hasLost;
 			drawInfo.clock = g_clock + jj;
+			drawInfo.health = octopus.health;
 			// only follow the octopus if you haven't yet lost
 			if (drawInfo.hasLost)
 			{

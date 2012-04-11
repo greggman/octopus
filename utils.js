@@ -103,6 +103,7 @@ function degToRad(deg)
 	return deg * Math.PI / 180;
 }
 
+
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){
 	return  window.requestAnimationFrame       ||
