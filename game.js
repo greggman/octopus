@@ -44,12 +44,11 @@ var g_heightScale = 1;
 var g_baseScale = 1;
 var g_obstacles = [];
 var g_collectibles = [];
-var g_inCollision = false;
-var g_oldCollision = false;
 var g_printMsgs = [];
 var g_gameState = 'title';
 var OPTIONS = {
 	numOctopi: 2,
+	bumpVel: 5,
 	legScrunch: 5,
 	legScrunchSpeed: 90,
 	legUnscrunchSpeed: 20,
@@ -412,14 +411,37 @@ function MakeLevel()
 	}
 }
 
+function CheckOctopusCollisions() {
+	var radSq = OPTIONS.octopusRadius * OPTIONS.octopusRadius * 2;
+	for (var ii = 0; ii < g_octopi.length; ++ii) {
+		var octo1 = g_octopi[ii];
+		var info1 = octo1.getInfo();
+		for (var jj = 1; jj < g_octopi.length; ++jj) {
+			var octo2 = g_octopi[jj];
+			var info2 = octo2.getInfo();
+			var dx = info1.x - info2.x;
+			var dy = info1.y - info2.y;
+			var distSq = dx * dx + dy * dy;
+			if (distSq < radSq) {
+				var l = Math.max(Math.sqrt(distSq), 0.0001);
+				var nx = dx / l * OPTIONS.bumpVel;
+				var ny = dy / l * OPTIONS.bumpVel;
+				octo1.addVel(nx, ny);
+				octo2.addVel(-nx, -ny);
+			}
+		}
+	}
+}
+
 function CheckCollisions()
 {
-	g_oldCollision = g_inCollision;
-	g_inCollision = false;
 	for (var jj = 0; jj < g_octopi.length; ++jj)
 	{
 		var octopus = g_octopi[jj];
 		var octoInfo = octopus.getInfo();
+		octopus.oldCollision = octopus.inCollision;
+		octopus.inCollision = false;
+
 		for (var ii = 0; ii < g_obstacles.length; ++ii)
 		{
 			var obj = g_obstacles[ii];
@@ -434,8 +456,8 @@ function CheckCollisions()
 			//ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
 			if (distSq < radSq && g_gameState == "play")
 			{
-				g_inCollision = true;
-				if (!g_oldCollision)
+				octopus,inCollision = true;
+				if (!octopus.oldCollision)
 				{
 					octopus.shootBack(obj);
 					InkSystem.startInk(dx / 2, dy / 2);
@@ -645,6 +667,8 @@ function update(elapsedTime, ctx)
 
 	CheckCollisions();
 	CheckCollection();
+	CheckOctopusCollisions();
+
 	for (var jj = 0; jj < g_octopi.length; ++jj)
 	{
 		var octopus = g_octopi[jj];
@@ -804,7 +828,7 @@ function update(elapsedTime, ctx)
 			//increment leg animation
 			if (OPTIONS.debug)
 			{
-				drawCircleLine(ctx, 0, 0, OPTIONS.octopusRadius, g_inCollision ? "red" : "white");
+				drawCircleLine(ctx, 0, 0, OPTIONS.octopusRadius, octopus.inCollision ? "red" : "white");
 			}
 			ctx.restore();
 		}

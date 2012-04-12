@@ -263,6 +263,11 @@ var OctopusControl = function(player)
 		}
 	}
 
+	function addVel(xv, yv) {
+		xVel += xv;
+		yVel += yv;
+	}
+
 	function shootBack(other)
 	{
 		if (OPTIONS.battle)
@@ -291,6 +296,7 @@ var OctopusControl = function(player)
 	}
 
 	return {
+		addVel: addVel,
 		getLegsInfo: getLegsInfo,
 		getInfo: getInfo,
 		shootBack: shootBack,
