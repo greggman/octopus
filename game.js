@@ -256,11 +256,11 @@ function main()
 			timer: 0
 		};
 		octopus.setLegs(OctoRender.getLegsInfo());
-		var r = 150;
+		var r = 450;
 		var a = Math.PI * 2 * ii / g_octopi.length;
 		var x = g_canvas.width / 2 + Math.sin(a) * r;
 		var y = g_canvas.width / 2 + Math.cos(a) * r;
-		octopus.setInfo(x, y, 0);
+		octopus.setInfo(x, y - r / 2, 0);
 		octopus.drawInfo = {
 			hue: chooseHue(ii),
 			images: images,
@@ -410,20 +410,27 @@ function MakeLevel()
 }
 
 function CheckOctopusCollisions() {
-	var radSq = OPTIONS.octopusRadius * OPTIONS.octopusRadius * 2;
+	var radSq = Math.pow(OPTIONS.octopusRadius * 2, 2);
+	for (var ii = 0; ii < g_octopi.length; ++ii) {
+		var octo = g_octopi[ii];
+		octo.oldTouching = octo.touching;
+		octo.touching = false;
+	}
 	for (var ii = 0; ii < g_octopi.length; ++ii) {
 		var octo1 = g_octopi[ii];
 		var info1 = octo1.getInfo();
-		for (var jj = 1; jj < g_octopi.length; ++jj) {
+		for (var jj = ii + 1; jj < g_octopi.length; ++jj) {
 			var octo2 = g_octopi[jj];
 			var info2 = octo2.getInfo();
 			var dx = info1.x - info2.x;
 			var dy = info1.y - info2.y;
 			var distSq = dx * dx + dy * dy;
 			if (distSq < radSq) {
+				octo1.touching = true;
+				octo2.touching = true;
 				var l = Math.max(Math.sqrt(distSq), 0.0001);
-				var nx = dx / l * OPTIONS.bumpVel;
-				var ny = dy / l * OPTIONS.bumpVel;
+				var nx = dx / l * Math.max(OPTIONS.bumpVel, l * 0.5);
+				var ny = dy / l * Math.max(OPTIONS.bumpVel, l * 0.5);
 				octo1.addVel(nx, ny);
 				octo2.addVel(-nx, -ny);
 			}
@@ -826,7 +833,12 @@ function update(elapsedTime, ctx)
 			//increment leg animation
 			if (OPTIONS.debug)
 			{
-				drawCircleLine(ctx, 0, 0, OPTIONS.octopusRadius, octopus.inCollision ? "red" : "white");
+				var color = octopus.inCollision ? "red" : "white";
+				if (octopus.touching)
+				{
+					color = "yellow";
+				}
+				drawCircleLine(ctx, 0, 0, OPTIONS.octopusRadius, color);
 			}
 			ctx.restore();
 		}
