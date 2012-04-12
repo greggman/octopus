@@ -474,7 +474,7 @@ function CheckCollection()
 				//collect stuffs!
 				obj.isCollected = true;
 				//get healed a little
-				octopus.health = Math.min(ocotpus.health + 1, 9);
+				octopus.health = Math.min(octopus.health + 1, 9);
 				itemsToRemove.push(ii);
 				//change expression
 				octopus.expression.img = octopus.drawInfo.images.bodyHappy;
@@ -653,7 +653,7 @@ function update(elapsedTime, ctx)
 			octopus.update(elapsedTime);
 			//track score
 			var octoInfo = octopus.getInfo();
-			octopus.distanceTraveled += ((octoInfo.y - octopus.prevPos.y) / 10) | 0;
+			octopus.distanceTraveled += ((octopus.prevPos.y - octoInfo.y) / 10) | 0;
 			octopus.prevPos.x = octoInfo.x;
 			octopus.prevPos.y = octoInfo.y;
 		}
