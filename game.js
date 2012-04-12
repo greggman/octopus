@@ -49,6 +49,7 @@ var g_gameState = 'title';
 var OPTIONS = {
 	numOctopi: 2,
 	bumpVel: 5,
+	healthBumpMult: 0.3,
 	legScrunch: 5,
 	legScrunchSpeed: 90,
 	legUnscrunchSpeed: 20,
@@ -411,28 +412,42 @@ function MakeLevel()
 
 function CheckOctopusCollisions() {
 	var radSq = Math.pow(OPTIONS.octopusRadius * 2, 2);
-	for (var ii = 0; ii < g_octopi.length; ++ii) {
+	for (var ii = 0; ii < g_octopi.length; ++ii)
+	{
 		var octo = g_octopi[ii];
 		octo.oldTouching = octo.touching;
 		octo.touching = false;
 	}
-	for (var ii = 0; ii < g_octopi.length; ++ii) {
+	for (var ii = 0; ii < g_octopi.length; ++ii)
+	{
 		var octo1 = g_octopi[ii];
+		if (octo.hasLost)
+		{
+			continue;
+		}
 		var info1 = octo1.getInfo();
-		for (var jj = ii + 1; jj < g_octopi.length; ++jj) {
+		for (var jj = ii + 1; jj < g_octopi.length; ++jj)
+		{
 			var octo2 = g_octopi[jj];
+			if (octo2.hasLost)
+			{
+				continue;
+			}
 			var info2 = octo2.getInfo();
 			var dx = info1.x - info2.x;
 			var dy = info1.y - info2.y;
 			var distSq = dx * dx + dy * dy;
-			if (distSq < radSq) {
+			if (distSq < radSq)
+			{
 				octo1.touching = true;
 				octo2.touching = true;
 				var l = Math.max(Math.sqrt(distSq), 0.0001);
 				var nx = dx / l * Math.max(OPTIONS.bumpVel, l * 0.5);
-				var ny = dy / l * Math.max(OPTIONS.bumpVel, l * 0.5);
-				octo1.addVel(nx, ny);
-				octo2.addVel(-nx, -ny);
+				var ny = dy / l * Math.max(OPTIONS.bumpVel, l * 0.5)
+				var o1Boost = (1 + Math.max(0, octo2.health) * OPTIONS.healthBumpMult);
+				var o2Boost = (1 + Math.max(0, octo1.health) * OPTIONS.healthBumpMult);
+				octo1.addVel( nx * o1Boost,  ny * o1Boost);
+				octo2.addVel(-nx * o2Boost, -ny * o2Boost);
 			}
 		}
 	}

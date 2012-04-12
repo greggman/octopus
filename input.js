@@ -53,7 +53,7 @@ InputSystem = (function(){
 			c = event.charCode;
 		}
 		switch (String.fromCharCode(c).toLowerCase())
-			{
+		{
 			case '8': addEvent(0, 0); break;
 			case 'p': addEvent(0, 1); break;
 			case 'm': addEvent(0, 2); break;
@@ -62,6 +62,7 @@ InputSystem = (function(){
 			case 'z': addEvent(0, 5); break;
 			case 'q': addEvent(0, 6); break;
 			case '4': addEvent(0, 7); break;
+
 			case '7': addEvent(1, 0); break;
 			case 'o': addEvent(1, 1); break;
 			case 'n': addEvent(1, 2); break;
