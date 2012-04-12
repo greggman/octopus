@@ -204,6 +204,13 @@ var OctopusControl = function(player)
 
 	function setInfo(x, y, rotation)
 	{
+		xVel = 0;
+		yVel = 0;
+		rVel = 0;
+		xAccel = 0;
+		yAccel = 0;
+		rAccel = 0;
+		lastXAccel = 0;
 		octoInfo.x = x;
 		octoInfo.y = y;
 		octoInfo.rotation = rotation;

@@ -30,6 +30,7 @@
  */
 window.onload = main;
 
+var g_selected = -1;
 var g_canvas;
 var g_ctx;
 var g_clock = 0;
@@ -50,6 +51,10 @@ var OPTIONS = {
 	numOctopi: 2,
 	bumpVel: 5,
 	healthBumpMult: 0.3,
+	deathAnimLimit: 300,
+	deathAnimFadeLimit: 150,
+	deathAnimSpeed: 100,
+	respawnTime: 5,
 	legScrunch: 5,
 	legScrunchSpeed: 90,
 	legUnscrunchSpeed: 20,
@@ -172,9 +177,9 @@ var g_images = {
 };
 
 Obstacles = [
-			{name:"urchin01", radius: 125, scale: OPTIONS.urchinScale1},//150 original
-			{name:"urchin02", radius: 125, scale: OPTIONS.urchinScale2}//scale should be .4 and .8
-			];
+	{name:"urchin01", radius: 125, scale: OPTIONS.urchinScale1},//150 original
+	{name:"urchin02", radius: 125, scale: OPTIONS.urchinScale2}//scale should be .4 and .8
+];
 
 Sounds = {
 	ouch: {
@@ -247,6 +252,7 @@ function main()
 		var images = OctoRender.getImages();
 		octopus.health = 9;
 		octopus.hasLost = false;
+		octopus.respawnTimer = 0;
 		octopus.distanceTraveled = 0;
 		octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 		octopus.legBackSwing = [false, false, false, false, false, false, false, false];
@@ -671,11 +677,7 @@ function update(elapsedTime, ctx)
 	}
 
 	//check losing state
-	if (OPTIONS.battle)
-	{
-		// TODO: fill this in for battle mode.
-	}
-	else
+	if (!OPTIONS.battle)
 	{
 		if (g_octopi[0].health <= 0)
 		{
@@ -791,6 +793,27 @@ function update(elapsedTime, ctx)
 			var legBackSwing = octopus.legBackSwing;
 			var expression = octopus.expression;
 			var drawInfo = octopus.drawInfo;
+
+			if (octopus.respawnTimer > 0)
+			{
+				octopus.respawnTimer -= elapsedTime;
+				if (octopus.respawnTimer > 0)
+				{
+					continue;
+				}
+				octopus.hasLost = false;
+				octopus.health = 9;
+				octopus.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
+				drawInfo.deathAnimDistance = 0;
+				octopus.distanceTraveled = 0;
+				expression.timer = 0;
+				expression.img = drawInfo.images.bodyNormal;
+			}
+			if (octopus.health <= 0)
+			{
+				octopus.hasLost = true;
+			}
+
 			ctx.save();
 			ctx.translate(0, octoInfo.y);
 			ctx.translate(octoInfo.x, 0);
@@ -805,14 +828,20 @@ function update(elapsedTime, ctx)
 				drawInfo.x = 0;
 				drawInfo.y = -drawInfo.deathAnimDistance;
 				drawInfo.rotation = 0;
+				drawInfo.deathAnimDistance += OPTIONS.deathAnimSpeed * elapsedTime;
 				//make the octopus fly up
+				var lerp1to0 = Math.max(0, 1 - Math.max(0, (OPTIONS.deathAnimFadeLimit - drawInfo.deathAnimDistance) / -OPTIONS.deathAnimFadeLimit));
+				//print("dad:" + drawInfo.deathAnimDistance);
+				//print("lep:" + lerp1to0);
+				var oldAlpha = ctx.globalAlpha;
+				ctx.globalAlpha = lerp1to0;
 				OctoRender.drawOctopus(ctx, drawInfo);
-				if (drawInfo.deathAnimDistance < 500)
+				ctx.globalAlpha = oldAlpha;
+				if (drawInfo.deathAnimDistance > OPTIONS.deathAnimLimit)
 				{
-					drawInfo.deathAnimDistance = drawInfo.deathAnimDistance + 4;
+					octopus.respawnTimer = OPTIONS.respawnTime;
 				}
 				expression.timer = 100;
-				ctx.restore();
 			}
 			else
 			{
@@ -852,6 +881,10 @@ function update(elapsedTime, ctx)
 				if (octopus.touching)
 				{
 					color = "yellow";
+				}
+				if (jj == g_selected && Math.floor(g_clock * 4) % 2)
+				{
+					color = "black";
 				}
 				drawCircleLine(ctx, 0, 0, OPTIONS.octopusRadius, color);
 			}
@@ -948,27 +981,34 @@ InkSystem = (function(){
 	var inks = [];
 	var inkSpawners = [];
 
-	function drawInks(ctx, elapsedTime){
+	function drawInks(ctx, elapsedTime)
+	{
 		var ii;
-		for (ii = 0; ii < inks.length; ++ii){
+		for (ii = 0; ii < inks.length; ++ii)
+		{
 			var ink = inks[ii];
-			if (g_clock < ink.time){
+			if (g_clock < ink.time)
+			{
 				break;
 			}
 		}
 		inks.splice(0, ii);
 
-		for (ii = 0; ii < inkSpawners.length; ++ii) {
+		for (ii = 0; ii < inkSpawners.length; ++ii)
+		{
 			var spawner = inkSpawners[ii];
-			if (spawner.inkCount > 0) {
+			if (spawner.inkCount > 0)
+			{
 				break;
 			}
 		}
 		inkSpawners.splice(0, ii);
 
-		for (var ii = 0; ii < inkSpawners.length; ++ii) {
+		for (var ii = 0; ii < inkSpawners.length; ++ii)
+		{
 			var spawner = inkSpawners[ii];
-			if (spawner.inkTime < g_clock && spawner.inkCount > 0){
+			if (spawner.inkTime < g_clock && spawner.inkCount > 0)
+			{
 				spawner.inkTime = g_clock + OPTIONS.inkLeakDuration / OPTIONS.inkCount;
 				var octoInfo = g_octopi[spawner.octoIndex].getInfo();
 				birthInk(octoInfo.x + spawner.inkXOff, octoInfo.y + spawner.inkYOff);
@@ -977,7 +1017,8 @@ InkSystem = (function(){
 		}
 
 		var alpha = ctx.globalAlpha;
-		for (var ii = 0; ii < inks.length; ++ii){
+		for (var ii = 0; ii < inks.length; ++ii)
+		{
 			var ink = inks[ii];
 			var img = ink.img;
 			ink.rot += ink.rotVel * elapsedTime;
@@ -1000,7 +1041,8 @@ InkSystem = (function(){
 		"ink02"
 	];
 
-	function birthInk(x, y){
+	function birthInk(x, y)
+	{
 		var ink = {
 			x: x,
 			y: y,
@@ -1012,7 +1054,8 @@ InkSystem = (function(){
 		inks.push(ink);
 	}
 
-	function startInk(octoIndex, x, y){
+	function startInk(octoIndex, x, y)
+	{
 		inkSpawners.push({
 			octoIndex: octoIndex,
 			inkXOff: x,
@@ -1022,7 +1065,7 @@ InkSystem = (function(){
 		});
 	}
 
-	return{
+	return {
 		birthInk: birthInk,
 		drawInks: drawInks,
 		startInk: startInk,

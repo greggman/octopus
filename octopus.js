@@ -50,7 +50,9 @@ OctoRender = (function()
 	function drawOctopus(ctx, info)
 	{
 		drawLegs(ctx, info);
-		drawHealth(ctx, info);
+		if (!info.hasLost) {
+			drawHealth(ctx, info);
+		}
 		drawOctopusBody(ctx, info.expression.img, info.x, info.y, info.rotation);
 	}
 
