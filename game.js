@@ -476,11 +476,11 @@ function CheckCollisions()
 			//ctx.fillText("dsq: " + distSq + " rSq: " + radSq, 10, 40);
 			if (distSq < radSq && g_gameState == "play")
 			{
-				octopus,inCollision = true;
+				octopus.inCollision = true;
 				if (!octopus.oldCollision)
 				{
 					octopus.shootBack(obj);
-					InkSystem.startInk(octoInfo.x + dx / 2, octoInfo.y + dy / 2);
+					InkSystem.startInk(jj, dx / 2, dy / 2);
 					audio.play_sound('ouch');
 					audio.play_sound('urchin');
 					octopus.health -= 3;//take damage
@@ -946,10 +946,7 @@ function MoveTentacle(tipPosX, tipPosY)
 InkSystem = (function(){
 	"strict";
 	var inks = [];
-	var inkTime = 0;
-	var inkXOff = 0;
-	var inkYOff = 0;
-	var inkCount = 0;
+	var inkSpawners = [];
 
 	function drawInks(ctx, elapsedTime){
 		var ii;
@@ -961,11 +958,22 @@ InkSystem = (function(){
 		}
 		inks.splice(0, ii);
 
-		if (inkTime < g_clock && inkCount > 0){
-			inkTime = g_clock + OPTIONS.inkLeakDuration / OPTIONS.inkCount;
-			--inkCount;
-			var octoInfo = g_octopi[0].getInfo();
-			birthInk(octoInfo.x + inkXOff, octoInfo.y + inkYOff);
+		for (ii = 0; ii < inkSpawners.length; ++ii) {
+			var spawner = inkSpawners[ii];
+			if (spawner.inkCount > 0) {
+				break;
+			}
+		}
+		inkSpawners.splice(0, ii);
+
+		for (var ii = 0; ii < inkSpawners.length; ++ii) {
+			var spawner = inkSpawners[ii];
+			if (spawner.inkTime < g_clock && spawner.inkCount > 0){
+				spawner.inkTime = g_clock + OPTIONS.inkLeakDuration / OPTIONS.inkCount;
+				var octoInfo = g_octopi[spawner.octoIndex].getInfo();
+				birthInk(octoInfo.x + spawner.inkXOff, octoInfo.y + spawner.inkYOff);
+				--spawner.inkCount;
+			}
 		}
 
 		var alpha = ctx.globalAlpha;
@@ -1004,10 +1012,14 @@ InkSystem = (function(){
 		inks.push(ink);
 	}
 
-	function startInk(x, y){
-		inkXOff = x;
-		inkYOff = y;
-		inkCount = OPTIONS.inkCount;
+	function startInk(octoIndex, x, y){
+		inkSpawners.push({
+			octoIndex: octoIndex,
+			inkXOff: x,
+			inkYOff: y,
+			inkCount: OPTIONS.inkCount,
+			inkTime: 0
+		});
 	}
 
 	return{
