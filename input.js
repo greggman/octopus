@@ -262,6 +262,8 @@ var OctopusControl = function(player)
 
 		if (OPTIONS.battle)
 		{
+			octoInfo.x = Math.max(OPTIONS.sideLimit, Math.min(OPTIONS.levelWidth - OPTIONS.sideLimit, octoInfo.x));
+			octoInfo.y = Math.max(OPTIONS.bottomLimit, Math.min(OPTIONS.levelHeight - OPTIONS.bottomLimit, octoInfo.y));
 		}
 		else
 		{

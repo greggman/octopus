@@ -44,6 +44,7 @@ var g_scrollIntY = 0;
 var g_heightScale = 1;
 var g_baseScale = 1;
 var g_obstacles = [];
+var g_collectedItems = [];
 var g_collectibles = [];
 var g_printMsgs = [];
 var g_gameState = 'title';
@@ -59,7 +60,9 @@ var OPTIONS = {
 	legScrunchSpeed: 90,
 	legUnscrunchSpeed: 20,
 	levelWidth: 1024,
+	levelHeight: 768,
 	sideLimit: 100,
+	bottomLimit: 100,
 	cameraChaseSpeed: 0.2,
 	octopusRadius: 85,
 	inkDuration: 1,
@@ -75,6 +78,7 @@ var OPTIONS = {
 	urchinScale2: .8,
 	collectibleScale: .5,
 	urchinSpawnRate: .24,
+	collectibleRespawnTime: 10,
 };
 
 MergeOptions(OPTIONS, OctoRender.getOptions());
@@ -500,7 +504,29 @@ function CheckCollisions()
 	}
 }
 
-function CheckCollection()
+function CheckCollectibleRespawn(curTime)
+{
+	//respawn collected items when ready
+	var itemsToRemove = [];
+	for (var jj = 0; jj < g_collectedItems.length; jj++)
+	{
+		var timeCollected = g_collectedItems[jj].timeCollected;
+		var timeElapsed = curTime - timeCollected;
+		if (timeElapsed > OPTIONS.collectibleRespawnTime)
+		{
+			g_collectedItems[jj].item.isCollected = false;
+			g_collectibles.push(g_collectedItems[jj].item);
+			itemsToRemove.push(g_collectedItems[jj]);
+		}
+	}
+	//remove respawned items
+	for (var jj = 0; jj < itemsToRemove.length; jj++)
+	{
+		g_collectibles.splice(itemsToRemove[ii], 1);
+	}
+}
+
+function CheckCollection(curTime)
 {
 	for (var jj = 0; jj < g_octopi.length; ++jj)
 	{
@@ -521,6 +547,12 @@ function CheckCollection()
 				audio.play_sound('eat');
 				//collect stuffs!
 				obj.isCollected = true;
+				var itemCollected = 
+				{
+					timeCollected: curTime,
+					item: obj
+				};
+				g_collectedItems.push(itemCollected);
 				//get healed a little
 				octopus.health = Math.min(octopus.health + 1, 9);
 				itemsToRemove.push(ii);
@@ -688,7 +720,8 @@ function update(elapsedTime, ctx)
 	}
 
 	CheckCollisions();
-	CheckCollection();
+	CheckCollection(elapsedTime);
+	CheckCollectibleRespawn(elapsedTime);
 	CheckOctopusCollisions();
 
 	for (var jj = 0; jj < g_octopi.length; ++jj)
@@ -699,7 +732,7 @@ function update(elapsedTime, ctx)
 			octopus.update(elapsedTime);
 			//track score
 			var octoInfo = octopus.getInfo();
-			octopus.distanceTraveled += ((octoInfo.y - octopus.prevPos.y) / 10) | 0;
+			octopus.distanceTraveled += -1 * Math.floor(octopus.prevPos.y - octoInfo.y);
 			octopus.prevPos.x = octoInfo.x;
 			octopus.prevPos.y = octoInfo.y;
 		}
