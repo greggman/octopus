@@ -471,11 +471,8 @@ function CheckCollection()
 				audio.play_sound('eat');
 				//collect stuffs!
 				obj.isCollected = true;
-				health++;//get healed a little
-				if (health > 9)
-				{
-					health = 9;
-				}
+				//get healed a little
+				octopus.health = Math.min(ocotpus.health + 1, 9);
 				itemsToRemove.push(ii);
 				//change expression
 				octopus.expression.img = octopus.drawInfo.images.bodyHappy;
