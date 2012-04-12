@@ -248,7 +248,7 @@ function main()
 		var images = OctoRender.getImages();
 		octopus.health = 9;
 		octopus.hasLost = false;
-		octopus.distanceTraveled = 0;
+		octopus.distanceTraveled = -900;
 		octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 		octopus.legBackSwing = [false, false, false, false, false, false, false, false];
 		octopus.prevPos = {x: 0, y: 0};
@@ -677,7 +677,7 @@ function update(elapsedTime, ctx)
 			octopus.update(elapsedTime);
 			//track score
 			var octoInfo = octopus.getInfo();
-			octopus.distanceTraveled += ((octopus.prevPos.y - octoInfo.y) / 10) | 0;
+			octopus.distanceTraveled += -1 * Math.floor(octopus.prevPos.y - octoInfo.y);
 			octopus.prevPos.x = octoInfo.x;
 			octopus.prevPos.y = octoInfo.y;
 		}
