@@ -465,7 +465,7 @@ function CheckCollisions()
 				if (!octopus.oldCollision)
 				{
 					octopus.shootBack(obj);
-					InkSystem.startInk(dx / 2, dy / 2);
+					InkSystem.startInk(octoInfo.x + dx / 2, octoInfo.y + dy / 2);
 					audio.play_sound('ouch');
 					audio.play_sound('urchin');
 					octopus.health -= 3;//take damage
@@ -872,25 +872,31 @@ function update(elapsedTime, ctx)
 					 g_canvas.width / 4.6, g_canvas.height / 3 + 100);
 	}
 
-	switch (g_gameState)
-	{
-	case 'title':
-		var h = g_canvas.height * 0.5 - (g_images.title.img.height + g_images.play.img.height) * 0.5;
-		h /= g_heightScale;
-		var h = g_canvas.height * 0.5 / g_heightScale;
-		print("")
-		print("gs:" + g_heightScale);
-		print("h:" + h);
-		drawImageCentered(ctx, g_images.title.img, g_canvas.width / 2, g_canvas.height / 4);
-		drawImageCentered(ctx, g_images.play.img, g_canvas.width / 2, g_canvas.height / 4 + 250);
-		break;
-	case 'tutorial':
-		drawImageCentered(ctx, g_images.tutorial.img, g_canvas.width / 2, g_canvas.height / 3);
-		break;
-	}
-
 	ctx.restore(); // for screen scale
 
+	drawScreen(ctx);
+	function drawScreen(ctx) {
+		var vScale = g_canvas.clientWidth / g_canvas.width;
+		var vHeight = g_canvas.height / vScale;
+		ctx.save();
+		ctx.scale(1, vScale);
+		switch (g_gameState)
+		{
+		case 'title':
+			var h1 = g_images.title.img.height;
+			var h2 = g_images.play.img.height;
+			var h = h1 + h2;
+			//print("h1:" + h1);
+			//print("h2:" + h2);
+			drawImageCentered(ctx, g_images.title.img, g_canvas.width / 2, vHeight / 2 - h / 4);
+			drawImageCentered(ctx, g_images.play.img, g_canvas.width / 2, vHeight / 2 - h / 4 + h / 2 + 20);
+			break;
+		case 'tutorial':
+			drawImageCentered(ctx, g_images.tutorial.img, g_canvas.width / 2, vHeight / 2);
+			break;
+		}
+		ctx.restore();
+	}
 }
 
 function drawCircle(ctx, x, y, radius, color)
