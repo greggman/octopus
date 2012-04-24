@@ -61,6 +61,8 @@ var OPTIONS = {
 	legUnscrunchSpeed: 20,
 	levelWidth: 1024,
 	levelHeight: 768,
+	battleLevelWidth: 1024 * 3,
+	battleLevelHeight: 768 * 3,
 	sideLimit: 100,
 	bottomLimit: 100,
 	cameraChaseSpeed: 0.2,
