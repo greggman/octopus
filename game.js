@@ -30,6 +30,24 @@
  */
 window.onload = main;
 
+var g_battleObstacles = [
+{ type: 0, x: 100, y: 100},
+{ type: 1, x: 300, y: 100},
+{ type: 0, x: 500, y: 100},
+{ type: 1, x: 100, y: 400},
+{ type: 0, x: 300, y: 400},
+{ type: 1, x: 500, y: 400},
+];
+
+var g_battleCollectables = [
+{ scale: 0.5, x: 150, y: 100},
+{ scale: 0.7, x: 350, y: 100},
+{ scale: 0.5, x: 550, y: 100},
+{ scale: 0.7, x: 150, y: 400},
+{ scale: 0.5, x: 350, y: 400},
+{ scale: 0.7, x: 550, y: 400},
+];
+
 var g_selected = -1;
 var g_canvas;
 var g_ctx;
@@ -404,20 +422,33 @@ function MakeCollectible(x, y, radius)
 
 function MakeLevel()
 {
-	var y = g_canvas.height;
-	var width = g_canvas.width * 0.8;
-	var xOff = Math.floor((g_canvas.width - width) * 0.5);
-	for (var ii = 0; ii < 100; ++ii)
-	{
-		//make obstacle
-		var x = xOff + pseudoRandInt(g_canvas.width);
-		MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
-		OPTIONS.urchinSpawnRate -= .001;
-		y += g_canvas.height * OPTIONS.urchinSpawnRate;
-		//make collectible
-		if (ii % 2 == 0)
+	if (OPTIONS.battle) {
+		var obstacles = g_battleObstacles;
+		for (var ii = 0; ii < obstacles.length; ++ii) {
+			var o = obstacles[ii]
+			MakeObstacle(Obstacles[o.type], o.x, o.y);
+		}
+		var collectables = g_battleCollectables;
+		for (var ii = 0; ii < collectables.length; ++ii) {
+			var o = collectables[ii]
+			MakeCollectible(o.x, o.y, o.scale);
+		}
+	} else {
+		var y = g_canvas.height;
+		var width = g_canvas.width * 0.8;
+		var xOff = Math.floor((g_canvas.width - width) * 0.5);
+		for (var ii = 0; ii < 100; ++ii)
 		{
-			MakeCollectible(pseudoRandInt(g_canvas.width), y + 33, g_images.collectible.img.width * .5);//
+			//make obstacle
+			var x = xOff + pseudoRandInt(g_canvas.width);
+			MakeObstacle(Obstacles[pseudoRandInt(Obstacles.length)], x, y);
+			OPTIONS.urchinSpawnRate -= .001;
+			y += g_canvas.height * OPTIONS.urchinSpawnRate;
+			//make collectible
+			if (ii % 2 == 0)
+			{
+				MakeCollectible(pseudoRandInt(g_canvas.width), y + 33, g_images.collectible.img.width * .5);//
+			}
 		}
 	}
 }
