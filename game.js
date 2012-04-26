@@ -814,6 +814,7 @@ function update(elapsedTime, ctx)
 		}
 
 		g_baseScale = Math.max(0.33, g_baseScale);
+		g_baseScale = 0.33;
 
 		print("bs: " + g_baseScale.toFixed(3));
 
@@ -822,6 +823,11 @@ function update(elapsedTime, ctx)
 
 		g_scrollX += (targetX - g_scrollX) * OPTIONS.cameraChaseSpeed;
 		g_scrollY += (targetY - g_scrollY) * OPTIONS.cameraChaseSpeed;
+
+		g_scrollX = Math.max(0, g_scrollX);
+		g_scrollY = Math.max(0, g_scrollY);
+
+		print("scroll:" + Math.floor(g_scrollX) + "," + Math.floor(g_scrollY));
 
 		ctx.scale(g_baseScale, g_baseScale * g_heightScale);
 	}
