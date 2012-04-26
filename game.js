@@ -992,6 +992,11 @@ function update(elapsedTime, ctx)
 					 g_canvas.width / 4.6, g_canvas.height / 3 + 100);
 	}
 
+	if (OPTIONS.debug) {
+		if (OPTIONS.battle) {
+			drawCircle(ctx, OPTIONS.battleLevelWidth / 2, OPTIONS.battleLevelHeight / 2, 5, "purple");
+		}
+	}
 	ctx.restore(); // for screen scale
 
 	drawScreen(ctx);
