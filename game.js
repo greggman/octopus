@@ -48,6 +48,13 @@ var g_battleCollectables = [
 { scale: 0.7, x: 550, y: 400},
 ];
 
+var g_battleSpawnPoints = [
+{ x:  900, y: 600, },
+{ x: 1200, y: 700, },
+{ x:  900, y: 800, },
+{ x: 1200, y: 900, },
+];
+
 var g_selected = -1;
 var g_canvas;
 var g_ctx;
@@ -97,6 +104,7 @@ var OPTIONS = {
 	urchinScale1: .5,
 	urchinScale2: .8,
 	collectibleScale: .5,
+	collectibleRadius: 40,
 	urchinSpawnRate: .24,
 	collectibleRespawnTime: 10,
 };
@@ -287,11 +295,16 @@ function main()
 			timer: 0
 		};
 		octopus.setLegs(OctoRender.getLegsInfo());
-		var r = 450;
-		var a = Math.PI * 2 * ii / g_octopi.length;
-		var x = g_canvas.width / 2 + Math.sin(a) * r;
-		var y = g_canvas.width / 2 + Math.cos(a) * r;
-		octopus.setInfo(x, y - r / 2, 0);
+		if (OPTIONS.battle) {
+			var sp = g_battleSpawnPoints[ii % g_battleSpawnPoints.length];
+			octopus.setInfo(sp.x, sp.y, 0);
+		} else {
+			var r = 450;
+			var a = Math.PI * 2 * ii / g_octopi.length;
+			var x = g_canvas.width / 2 + Math.sin(a) * r;
+			var y = g_canvas.width / 2 + Math.cos(a) * r;
+			octopus.setInfo(x, y - r / 2, 0);
+		}
 		octopus.drawInfo = {
 			hue: chooseHue(ii),
 			images: images,
@@ -397,6 +410,10 @@ function main()
 
 function MakeObstacle(type, x, y)
 {
+	if (OPTIONS.noObstacles) {
+		return;
+	}
+
 	var obj = {
 		x: x,
 		y: y,
@@ -537,28 +554,6 @@ function CheckCollisions()
 	}
 }
 
-function CheckCollectibleRespawn(curTime)
-{
-	//respawn collected items when ready
-	var itemsToRemove = [];
-	for (var jj = 0; jj < g_collectedItems.length; jj++)
-	{
-		var timeCollected = g_collectedItems[jj].timeCollected;
-		var timeElapsed = curTime - timeCollected;
-		if (timeElapsed > OPTIONS.collectibleRespawnTime)
-		{
-			g_collectedItems[jj].item.isCollected = false;
-			g_collectibles.push(g_collectedItems[jj].item);
-			itemsToRemove.push(g_collectedItems[jj]);
-		}
-	}
-	//remove respawned items
-	for (var jj = 0; jj < itemsToRemove.length; jj++)
-	{
-		g_collectibles.splice(itemsToRemove[ii], 1);
-	}
-}
-
 function CheckCollection(curTime)
 {
 	for (var jj = 0; jj < g_octopi.length; ++jj)
@@ -569,35 +564,39 @@ function CheckCollection(curTime)
 		for (var ii = 0; ii < g_collectibles.length; ii++)
 		{
 			var obj = g_collectibles[ii];
-			var dx = obj.x - octoInfo.x;
-			var dy = obj.y - octoInfo.y;
-			var rad = obj.radius + OPTIONS.octopusRadius;
-			var radSq = rad * rad;
-			var distSq = dx * dx + dy * dy;
 
-			if (distSq < radSq && !obj.isCollected)
-			{
-				audio.play_sound('eat');
-				//collect stuffs!
-				obj.isCollected = true;
-				var itemCollected = 
+			if (!obj.isCollected) {
+				var dx = obj.x - octoInfo.x;
+				var dy = obj.y - octoInfo.y;
+				var rad = OPTIONS.collectibleRadius * obj.radius + OPTIONS.octopusRadius;
+				var radSq = rad * rad;
+				var distSq = dx * dx + dy * dy;
+
+				if (distSq < radSq)
 				{
-					timeCollected: curTime,
-					item: obj
-				};
-				g_collectedItems.push(itemCollected);
-				//get healed a little
-				octopus.health = Math.min(octopus.health + 1, 9);
-				itemsToRemove.push(ii);
-				//change expression
-				octopus.expression.img = octopus.drawInfo.images.bodyHappy;
-				octopus.expression.timer = 35;
+					audio.play_sound('eat');
+					//collect stuffs!
+					obj.timeCollected = curTime;
+					obj.isCollected = true;
+					//get healed a little
+					octopus.health = Math.min(octopus.health + 1, 9);
+					//change expression
+					octopus.expression.img = octopus.drawInfo.images.bodyHappy;
+					octopus.expression.timer = 35;
+				}
 			}
 		}
-		//remove collected items
-		for (var ii = 0; ii < itemsToRemove; ii++)
-		{
-			g_collectibles.splice(itemsToRemove[ii], 1);
+	}
+
+	for (var ii = 0; ii < g_collectibles.length; ii++)
+	{
+		var obj = g_collectibles[ii];
+		if (obj.isCollected) {
+			var timeElapsed = curTime - obj.timeCollected;
+			print("" + ii + ": " + timeElapsed.toFixed(3));
+			if (timeElapsed > OPTIONS.collectibleRespawnTime) {
+				obj.isCollected = false;
+			}
 		}
 	}
 }
@@ -690,7 +689,7 @@ function drawCollectibles(ctx)
 		{
 			ctx.save();
 			var img = g_images.collectible.img;
-			var scale = OPTIONS.collectibleScale;//here
+			var scale = obj.radius;
 			ctx.translate(obj.x, obj.y);
 			ctx.scale(scale, scale);
 			ctx.save()
@@ -699,7 +698,7 @@ function drawCollectibles(ctx)
 			ctx.restore();
 			if (OPTIONS.debug)
 			{
-				drawCircleLine(ctx, 0, 0, obj.type.radius, "white");
+				drawCircleLine(ctx, 0, 0, OPTIONS.collectibleRadius, "white");
 			}
 			ctx.restore();
 		}
@@ -753,8 +752,7 @@ function update(elapsedTime, ctx)
 	}
 
 	CheckCollisions();
-	CheckCollection(elapsedTime);
-	CheckCollectibleRespawn(elapsedTime);
+	CheckCollection(g_clock);
 	CheckOctopusCollisions();
 
 	for (var jj = 0; jj < g_octopi.length; ++jj)
@@ -814,6 +812,8 @@ function update(elapsedTime, ctx)
 			var yBaseScale = halfScreenHeight / dy;
 			g_baseScale = Math.min(g_baseScale, yBaseScale);
 		}
+
+		g_baseScale = Math.max(0.33, g_baseScale);
 
 		print("bs: " + g_baseScale.toFixed(3));
 
