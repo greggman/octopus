@@ -32,11 +32,13 @@ window.onload = main;
 
 var g_battleObstacles = [
 { type: 0, x: 100, y: 100},
-{ type: 1, x: 300, y: 100},
-{ type: 0, x: 500, y: 100},
-{ type: 1, x: 100, y: 400},
-{ type: 0, x: 300, y: 400},
-{ type: 1, x: 500, y: 400},
+{ type: 1, x: 550, y: 100},
+{ type: 0, x: 1000, y: 100},
+{ type: 1, x: 1450, y: 100},
+{ type: 1, x: 100, y: 550},
+{ type: 0, x: 550, y: 550},
+{ type: 1, x: 1000, y: 550},
+{ type: 0, x: 1450, y: 550},
 ];
 
 var g_battleCollectables = [
@@ -100,7 +102,7 @@ var OPTIONS = {
 	legRotFriction: 0.98,
 	legAcceleration: 60,
 	legUpDuration: 0.8,
-	shootBackVelocity: -500,
+	shootBackVelocity: -120,
 	urchinScale1: .5,
 	urchinScale2: .8,
 	collectibleScale: .5,
