@@ -23,9 +23,15 @@ var getOctopusForPlayer = (function() {
 	}
 
 	return function() {
-		// Only in the case of there being 1 octopus with 4 players
-		// skip this so we add a new octopus.
-		if (g_numActiveOctopi == 1 && g_numPlayers == 5 && OPTIONS.numOctopi > 1) {
+		// if there are only 8s and one 4 then start a new octopus.
+		var non4s = 0;
+		for (var ii = 1; ii < NUM_PLAYERS_PER_OCTOPUS; ++ii) {
+			if (ii == 4) {
+				continue;
+			}
+			non4s += g_octopiByNumPlayers[ii].length;
+		}
+		if (non4s == 0 && g_octopiByNumPlayers[4].length == 1 && g_octopiByNumPlayers[0].length > 0) {
 			return useOctopiLevel(0);
 		}
 
