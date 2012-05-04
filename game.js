@@ -52,10 +52,10 @@ var g_battleCollectables = [
 ];
 
 var g_battleSpawnPoints = [
-{ x:  900, y: 600, },
-{ x: 1200, y: 700, },
-{ x:  900, y: 800, },
-{ x: 1200, y: 900, },
+{ x: 1900, y: 1000, },
+{ x: 1200, y: 1200, },
+{ x: 1900, y: 1100, },
+{ x: 1200, y: 1400, },
 ];
 
 var g_selected = -1;
@@ -70,6 +70,7 @@ var g_scrollY = 0;
 var g_scrollIntX = 0;
 var g_scrollIntY = 0;
 var g_heightScale = 1;
+var g_nextSpawnPoint = 0;
 var g_baseScale = 1;
 var g_obstacles = [];
 var g_collectedItems = [];
@@ -271,6 +272,8 @@ function main()
 	loader.loadImages(g_images);
 	if (OPTIONS.battle)
 	{
+		g_gameState = 'play';
+		InputSystem.startInput();
 		for (var ii = 0; ii < OPTIONS.numOctopi; ++ii)
 		{
 			var octopus = new OctopusControl(ii);
@@ -281,6 +284,7 @@ function main()
 	else
 	{
 		g_octopi.push(new OctopusControl(0));
+		addNetOctopus(g_octopi[0]);
 	}
 
 	if (true)
@@ -318,8 +322,8 @@ function main()
 		} else {
 			var r = 450;
 			var a = Math.PI * 2 * ii / g_octopi.length;
-			var x = OPTIONS.battleLevelWidth / 2 + Math.sin(a) * r;
-			var y = OPTIONS.battleLevelHeight / 2 + Math.cos(a) * r;
+			var x = g_canvas.width / 2 + Math.sin(a) * r;
+			var y = g_canvas.height / 2 + Math.cos(a) * r;
 			octopus.setInfo(x, y - r / 2, 0);
 		}
 		octopus.drawInfo = {
@@ -349,6 +353,35 @@ function main()
 			hue += 0.05;
 		}
 		return hue;
+	}
+
+	//allow play again if the octopus is dead
+	window.addEventListener('click', handleClick);
+	window.addEventListener('touchstart', handleClick);
+
+	function handleClick(event)
+	{
+		if (g_clock < g_debounceTimer)
+		{
+			return;
+		}
+
+		g_debounceTimer = g_clock + 0.5;
+		switch (g_gameState)
+		{
+		case 'title':
+			g_gameState = 'tutorial';
+			break;
+		case 'tutorial':
+			g_gameState = 'play';
+			InputSystem.startInput();
+			break;
+		case 'play':
+			break;
+		case 'gameover':
+			window.location = window.location;
+			break;
+		}
 	}
 
 	var then = getTime();
@@ -737,34 +770,6 @@ g_debounceTimer = 0;
 function update(elapsedTime, ctx)
 {
 	print("");
-	//allow play again if the octopus is dead
-	window.addEventListener('click', handleClick);
-	window.addEventListener('touchstart', handleClick);
-
-	function handleClick(event)
-	{
-		if (g_clock < g_debounceTimer)
-		{
-			return;
-		}
-
-		g_debounceTimer = g_clock + 0.5;
-		switch (g_gameState)
-		{
-		case 'title':
-			g_gameState = 'tutorial';
-			break;
-		case 'tutorial':
-			g_gameState = 'play';
-			InputSystem.startInput();
-			break;
-		case 'play':
-			break;
-		case 'gameover':
-			window.location = window.location;
-			break;
-		}
-	}
 
 	//check losing state
 	if (!OPTIONS.battle)
@@ -909,8 +914,10 @@ function update(elapsedTime, ctx)
 				redistributePlayers(octopus.netInfo);
 				octopus.hasLost = false;
 				octopus.health = 9;
-				octopus.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
+				var sp = g_battleSpawnPoints[(g_nextSpawnPoint++) % g_battleSpawnPoints.length];
+				octopus.setInfo(sp.x, sp.y, 0);
 				drawInfo.deathAnimDistance = 0;
+				drawInfo.legDrift = 0.5;
 				octopus.distanceTraveled = 0;
 				expression.timer = 0;
 				expression.img = drawInfo.images.bodyNormal;
@@ -954,6 +961,7 @@ function update(elapsedTime, ctx)
 					if (OPTIONS.battle) {
 						octopus.respawnTimer = OPTIONS.respawnTime;
 						octopus.inactive = true;
+						drawInfo.deathAnimDistance = 0;
 					}
 				}
 				expression.timer = 100;
@@ -1071,6 +1079,10 @@ function update(elapsedTime, ctx)
 		case 'tutorial':
 			drawImageCentered(ctx, g_images.tutorial.img, g_canvas.width / 2, vHeight / 2);
 			break;
+		case 'play':
+			if (OPTIONS.battle && g_numActiveOctopi == 0) {
+				drawImageCentered(ctx, g_images.title.img, g_canvas.width / 2, vHeight / 2);
+			}
 		}
 		ctx.restore();
 	}

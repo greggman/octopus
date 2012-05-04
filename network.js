@@ -25,7 +25,7 @@ var getOctopusForPlayer = (function() {
 	return function() {
 		// Only in the case of there being 1 octopus with 4 players
 		// skip this so we add a new octopus.
-		if (g_numActiveOctopi == 1 && g_numPlayers == 5) {
+		if (g_numActiveOctopi == 1 && g_numPlayers == 5 && OPTIONS.numOctopi > 1) {
 			return useOctopiLevel(0);
 		}
 
@@ -73,7 +73,7 @@ function addNetOctopus(octopus) {
 		freeSlots: [0, 1, 2, 3, 4, 5, 6, 7]
 	};
 	octopus.netInfo = netInfo;
-	g_octopiByNumPlayers[0].push(netInfo);
+	g_octopiByNumPlayers[0].unshift(netInfo);
 }
 
 function redistributePlayers(octoNetInfo) {
