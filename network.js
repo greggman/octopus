@@ -61,7 +61,9 @@ function removePlayerFromOctopus(octoNetInfo) {
 	g_octopiByNumPlayers[oldCount].splice(oldIndex, 1);
 	g_octopiByNumPlayers[newCount].push(octoNetInfo);
 	if (newCount == 0) {
-		octoNetInfo.octo.health = 0;
+		if (OPTIONS.battle) {
+			octoNetInfo.octo.health = 0;
+		}
 		--g_numActiveOctopi;
 	}
 }
