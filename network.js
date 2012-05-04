@@ -3,7 +3,90 @@ var g_socket;
 var g_statusElem;
 var g_numPlayers = 0;
 var g_players = {};
-var g_freeSlots = [];
+
+var NUM_PLAYERS_PER_OCTOPUS = 8;
+var g_octopiByNumPlayers = [];
+var g_numNetOctopi = 0;
+var g_numActiveOctopi = 0;
+
+for (var ii = 0; ii <= NUM_PLAYERS_PER_OCTOPUS; ++ii) {
+	g_octopiByNumPlayers.push([]);
+}
+
+// adds a player to the octopus
+// with the lowest number of users
+// returns the netInfo of that octopus
+var getOctopusForPlayer = (function() {
+	var checkOrder = [];
+	for (var ii = 0; ii < NUM_PLAYERS_PER_OCTOPUS; ++ii) {
+		checkOrder.push((ii + 1) % NUM_PLAYERS_PER_OCTOPUS);
+	}
+
+	return function() {
+		// Only in the case of there being 1 octopus with 4 players
+		// skip this so we add a new octopus.
+		if (g_numActiveOctopi == 1 && g_numPlayers == 5) {
+			return useOctopiLevel(0);
+		}
+
+		for (var jj = 0; jj < checkOrder.length; ++jj) {
+			var ii = checkOrder[jj];
+			var octopi = g_octopiByNumPlayers[ii];
+			if (octopi && octopi.length > 0) {
+				return useOctopiLevel(ii);
+			}
+		}
+		throw "should never get here";
+	}
+}());
+
+function useOctopiLevel(ii) {
+	var octopi = g_octopiByNumPlayers[ii];
+	var octoNetInfo = octopi.pop();
+	g_octopiByNumPlayers[ii + 1].push(octoNetInfo);
+	octoNetInfo.octo.inactive = false;
+	if (ii == 0) {
+		++g_numActiveOctopi;
+	}
+	return octoNetInfo;
+}
+
+function removePlayerFromOctopus(octoNetInfo) {
+	var newCount = NUM_PLAYERS_PER_OCTOPUS - octoNetInfo.freeSlots.length;
+	var oldCount = newCount + 1;
+	var oldIndex = g_octopiByNumPlayers[oldCount].indexOf(octoNetInfo);
+	if (oldIndex < 0) {
+		throw "should never get here";
+	}
+	g_octopiByNumPlayers[oldCount].splice(oldIndex, 1);
+	g_octopiByNumPlayers[newCount].push(octoNetInfo);
+	if (newCount == 0) {
+		octoNetInfo.octo.health = 0;
+		--g_numActiveOctopi;
+	}
+}
+
+function addNetOctopus(octopus) {
+	var netInfo = {
+		octo: octopus,
+		players: [],
+		freeSlots: [0, 1, 2, 3, 4, 5, 6, 7]
+	};
+	octopus.netInfo = netInfo;
+	g_octopiByNumPlayers[0].push(netInfo);
+}
+
+function redistributePlayers(octoNetInfo) {
+	var players = [];
+	while (octoNetInfo.players.length) {
+		var player = octoNetInfo.players[0];
+		player.removeFromOctopus();
+		players.push(player);
+	}
+	for (var ii = 0; ii < players.length; ++ii) {
+		players[ii].addToOctopus();
+	}
+}
 
 function connect()
 {
@@ -12,28 +95,10 @@ function connect()
 		log("no socket io");
 		g_socket = {
 			send: function()
-			{
+ 			{
 			}
 		};
 		return;
-	}
-
-	if (OPTIONS.battle)
-	{
-		var numInputs = OPTIONS.numOctopi * 8;
-		for (var ii = 0; ii < numInputs; ++ii)
-		{
-			var side = ii % OPTIONS.numOctopi;
-			var slot = Math.floor(ii / OPTIONS.numOctopi);
-			g_freeSlots.push(side * 8 + slot);
-		}
-	}
-	else
-	{
-		for (var ii = 0; ii < 8; ++ii)
-		{
-			g_freeSlots.push(ii);
-		}
 	}
 
 
@@ -119,18 +184,17 @@ function processMessage(msg)
 
 function startPlayer(id)
 {
-	if (g_freeSlots.length == 0)
-	{
-		log("too many players");
-		return;
-	}
+	// Checks if a player is already under this id
 	if (g_players[id])
 	{
 		return;
 	}
+	if (g_numPlayers >= OPTIONS.numOctopi * NUM_PLAYERS_PER_OCTOPUS) {
+		return;
+	}
 	++g_numPlayers;
 	updateOnlineStatus();
-	g_players[id] = new Player(id, g_freeSlots.shift());
+	g_players[id] = new Player(id);
 }
 
 function updatePlayer(id, msg)
@@ -171,22 +235,11 @@ function getLegId(slotId)
 	return g_slotRemap[slotId % 8];
 }
 
-function getTeamId(slotId)
+function Player(clientId)
 {
-	return Math.floor(slotId / 8);
-}
-
-function Player(clientId, slotId)
-{
-	this.slotId = slotId;
-	this.clientId = clientId
-	var teamId = getTeamId(this.slotId);
-	this.send({
-		cmd: 'id',
-		legId: getLegId(this.slotId),
-		teamId: teamId,
-		hue: g_octopi[teamId].drawInfo.hue
-	});
+	this.clientId = clientId;
+	this.slotId = -1;
+	this.addToOctopus();
 }
 
 Player.prototype.update = function(msg)
@@ -195,14 +248,38 @@ Player.prototype.update = function(msg)
 	switch (msg.cmd)
 	{
 	case 'press':
-		InputSystem.addEvent(getTeamId(this.slotId), getLegId(this.slotId));
+		InputSystem.addEvent(this.octoNetInfo.octo.getOctoId(), getLegId(this.slotId));
 		break;
 	}
 };
 
+Player.prototype.addToOctopus = function()
+{
+	var octoNetInfo = getOctopusForPlayer();
+	octoNetInfo.players.push(this);
+	this.octoNetInfo = octoNetInfo;
+	this.slotId = octoNetInfo.freeSlots.shift();
+	var teamId = octoNetInfo.octo.getOctoId();
+	this.send({
+		cmd: 'id',
+		legId: getLegId(this.slotId),
+		teamId: teamId,
+		hue: octoNetInfo.octo.drawInfo.hue
+	});
+};
+
+Player.prototype.removeFromOctopus = function()
+{
+	var octoNetInfo = this.octoNetInfo;
+	octoNetInfo.freeSlots.push(this.slotId);
+	var ndx = octoNetInfo.players.indexOf(this);
+	octoNetInfo.players.splice(ndx, 1);
+	removePlayerFromOctopus(this.octoNetInfo);
+};
+
 Player.prototype.removeFromGame = function()
 {
-	g_freeSlots.push(this.slotId);
+	this.removeFromOctopus();
 };
 
 Player.prototype.send = function(cmd)

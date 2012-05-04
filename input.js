@@ -84,30 +84,30 @@ InputSystem = (function(){
 		}
 	}, false);
 
-	function getEventQueue(player){
-		var eventQueue = eventQueues[player];
+	function getEventQueue(octopusId){
+		var eventQueue = eventQueues[octopusId];
 		if (!eventQueue){
 			eventQueue = [];
-			eventQueues[player] = eventQueue;
+			eventQueues[octopusId] = eventQueue;
 		}
 		return eventQueue;
 	}
 
-	function getListeners(player, type){
-		var playerListeners = listeners[player];
-		if (!playerListeners){
-			playerListeners = {};
-			listeners[player] = playerListeners;
+	function getListeners(octopusId, type){
+		var octopusListeners = listeners[octopusId];
+		if (!octopusListeners){
+			octopusListeners = {};
+			listeners[octopusId] = octopusListeners;
 		}
-		var list = playerListeners[type];
+		var list = octopusListeners[type];
 		if (!list){
 			list = [];
-			playerListeners[type] = list;
+			octopusListeners[type] = list;
 		}
 		return list;
 	}
 
-	function addEvent(player, direction){
+	function addEvent(octopusId, direction){
 		if (!active){
 			return;
 		}
@@ -115,20 +115,20 @@ InputSystem = (function(){
 			direction: direction,
 			time: g_clock
 		};
-		var eventQueue = getEventQueue(player);
+		var eventQueue = getEventQueue(octopusId);
 		eventQueue.push(event);
-		var list = getListeners(player, 'direction');
+		var list = getListeners(octopusId, 'direction');
 		if (list){
 			list = list.slice(0);
 			for (var ii = 0; ii < list.length; ++ii){
 				list[ii](event);
 			}
 		}
-		removeOldEvents(player);
+		removeOldEvents(octopusId);
 	}
 
-	function removeOldEvents(player){
-		var eventQueue = getEventQueue(player);
+	function removeOldEvents(octopusId){
+		var eventQueue = getEventQueue(octopusId);
 		var now = g_clock;
 		var ii = 0;
 		for (; ii < eventQueue.length; ++ii){
@@ -140,8 +140,8 @@ InputSystem = (function(){
 		eventQueue.splice(0, ii);
 	}
 
-	function addEventListener(player, type, listener){
-		var list = getListeners(player, [type]);
+	function addEventListener(octopusId, type, listener){
+		var list = getListeners(octopusId, [type]);
 		list.push(listener);
 	}
 
@@ -163,7 +163,7 @@ InputSystem = (function(){
 	}
 }());
 
-var OctopusControl = function(player)
+var OctopusControl = function(octopusId)
 {
 	"strict";
 	var legsInfo;
@@ -195,7 +195,11 @@ var OctopusControl = function(player)
 		}
 	}
 
-	InputSystem.addEventListener(player, 'direction', handleDirection);
+	InputSystem.addEventListener(octopusId, 'direction', handleDirection);
+
+	function getOctoId() {
+		return octopusId;
+	}
 
 	function getInfo()
 	{
@@ -306,6 +310,7 @@ var OctopusControl = function(player)
 	return {
 		addVel: addVel,
 		getLegsInfo: getLegsInfo,
+		getOctoId: getOctoId,
 		getInfo: getInfo,
 		shootBack: shootBack,
 		setInfo: setInfo,

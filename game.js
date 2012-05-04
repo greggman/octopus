@@ -28,6 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 window.onload = main;
 
 var g_battleObstacles = [
@@ -76,13 +77,18 @@ var g_collectibles = [];
 var g_printMsgs = [];
 var g_gameState = 'title';
 var OPTIONS = {
+	showAll: false,      // show inactive octopi
+	noPause: false,      // don't pause the game when out of focus
+	debug: false,        // show extra info
+	battle: false,       // start battle mode
+	noObstacles: false,  // turn off obstacles
 	numOctopi: 2,
 	bumpVel: 5,
 	healthBumpMult: 0.3,
 	deathAnimLimit: 300,
 	deathAnimFadeLimit: 150,
 	deathAnimSpeed: 100,
-	respawnTime: 5,
+	respawnTime: 3,
 	legScrunch: 5,
 	legScrunchSpeed: 90,
 	legUnscrunchSpeed: 20,
@@ -131,6 +137,12 @@ function drawPrint(ctx)
 		ctx.fillText(g_printMsgs[ii], 10, ii * 15 + 20);
 	}
 	g_printMsgs = [];
+}
+
+function drawText(ctx, x, y, msg, opt_color) {
+	ctx.font = "10pt monospace";
+	ctx.fillStyle = opt_color || "white";
+	ctx.fillText(msg, x, y);
 }
 
 // return int from 0 to range - 1
@@ -261,7 +273,9 @@ function main()
 	{
 		for (var ii = 0; ii < OPTIONS.numOctopi; ++ii)
 		{
-			g_octopi.push(new OctopusControl(ii));
+			var octopus = new OctopusControl(ii);
+			addNetOctopus(octopus);
+			g_octopi.push(octopus);
 		}
 	}
 	else
@@ -286,6 +300,7 @@ function main()
 		var images = OctoRender.getImages();
 		octopus.health = 9;
 		octopus.hasLost = false;
+		octopus.inactive = OPTIONS.battle || OPTIONS.showAll;
 		octopus.respawnTimer = 0;
 		octopus.distanceTraveled = 0;
 		octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -303,8 +318,8 @@ function main()
 		} else {
 			var r = 450;
 			var a = Math.PI * 2 * ii / g_octopi.length;
-			var x = g_canvas.width / 2 + Math.sin(a) * r;
-			var y = g_canvas.width / 2 + Math.cos(a) * r;
+			var x = OPTIONS.battleLevelWidth / 2 + Math.sin(a) * r;
+			var y = OPTIONS.battleLevelHeight / 2 + Math.cos(a) * r;
 			octopus.setInfo(x, y - r / 2, 0);
 		}
 		octopus.drawInfo = {
@@ -483,7 +498,7 @@ function CheckOctopusCollisions() {
 	for (var ii = 0; ii < g_octopi.length; ++ii)
 	{
 		var octo1 = g_octopi[ii];
-		if (octo.hasLost)
+		if (octo.hasLost || octo.inactive)
 		{
 			continue;
 		}
@@ -491,7 +506,7 @@ function CheckOctopusCollisions() {
 		for (var jj = ii + 1; jj < g_octopi.length; ++jj)
 		{
 			var octo2 = g_octopi[jj];
-			if (octo2.hasLost)
+			if (octo2.hasLost || octo.inactive)
 			{
 				continue;
 			}
@@ -523,6 +538,10 @@ function CheckCollisions()
 		var octoInfo = octopus.getInfo();
 		octopus.oldCollision = octopus.inCollision;
 		octopus.inCollision = false;
+
+		if (octopus.hasLost || octopus.inactive) {
+			continue;
+		}
 
 		for (var ii = 0; ii < g_obstacles.length; ++ii)
 		{
@@ -562,6 +581,11 @@ function CheckCollection(curTime)
 	{
 		var octopus = g_octopi[jj];
 		var octoInfo = octopus.getInfo();
+
+		if (octopus.hasLost || octopus.inactive) {
+			continue;
+		}
+
 		var itemsToRemove = [];
 		for (var ii = 0; ii < g_collectibles.length; ii++)
 		{
@@ -760,7 +784,7 @@ function update(elapsedTime, ctx)
 	for (var jj = 0; jj < g_octopi.length; ++jj)
 	{
 		var octopus = g_octopi[jj];
-		if (!octopus.hasLost)
+		if (!octopus.hasLost && !octopus.inactive)
 		{
 			octopus.update(elapsedTime);
 			//track score
@@ -798,8 +822,15 @@ function update(elapsedTime, ctx)
 		var screenWidth = 1024
 		var screenHeight = g_canvas.height / g_heightScale;
 
-		print("sw: " + screenWidth + " sh:" + screenHeight.toFixed(0));
-		print("adx: " + dx.toFixed(0) + " ady: " + dy.toFixed(0));
+		if (OPTIONS.debug) {
+			print("sw: " + screenWidth + " sh:" + screenHeight.toFixed(0));
+			print("adx: " + dx.toFixed(0) + " ady: " + dy.toFixed(0));
+			print("active: " + g_numActiveOctopi);
+			for (var ii = 0; ii < g_octopiByNumPlayers.length; ++ii) {
+				var octopi = g_octopiByNumPlayers[ii];
+				print ("" + ii + ": " + octopi.length);
+			}
+		}
 
 		var halfScreenWidth = screenWidth / 2;
 		var halfScreenHeight = screenHeight / 2;
@@ -875,6 +906,7 @@ function update(elapsedTime, ctx)
 				{
 					continue;
 				}
+				redistributePlayers(octopus.netInfo);
 				octopus.hasLost = false;
 				octopus.health = 9;
 				octopus.setInfo(g_canvas.width / 2, g_canvas.height / 2, 0);
@@ -883,6 +915,12 @@ function update(elapsedTime, ctx)
 				expression.timer = 0;
 				expression.img = drawInfo.images.bodyNormal;
 			}
+
+			if (octopus.inactive) {
+				continue;
+			}
+
+
 			if (octopus.health <= 0)
 			{
 				octopus.hasLost = true;
@@ -913,7 +951,10 @@ function update(elapsedTime, ctx)
 				ctx.globalAlpha = oldAlpha;
 				if (drawInfo.deathAnimDistance > OPTIONS.deathAnimLimit)
 				{
-					octopus.respawnTimer = OPTIONS.respawnTime;
+					if (OPTIONS.battle) {
+						octopus.respawnTimer = OPTIONS.respawnTime;
+						octopus.inactive = true;
+					}
 				}
 				expression.timer = 100;
 			}
@@ -924,6 +965,15 @@ function update(elapsedTime, ctx)
 				drawInfo.rotation = 0;
 				OctoRender.drawOctopus(ctx, drawInfo);
 			}
+
+
+			if (OPTIONS.battle && OPTIONS.debug) {
+				ctx.save();
+				ctx.scale(4, 4);
+				drawText(ctx, 0, 0, octopus.netInfo.players.length);
+				ctx.restore();
+			}
+
 			//change expression
 			if (expression.timer > 0)
 			{
