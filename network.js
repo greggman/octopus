@@ -110,8 +110,8 @@ function connect()
 	}
 
 
-	$("online").style.display = "block";
-	g_statusElem = $("onlinestatus");
+	document.getElementById("online").style.display = "block";
+	g_statusElem = document.getElementById("onlinestatus");
 	var url = "http://" + window.location.host;
 	log("connecting to: " + url);
 //  g_socket = new io.connect(window.location.host, {

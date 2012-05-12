@@ -287,14 +287,10 @@ function main()
 		addNetOctopus(g_octopi[0]);
 	}
 
-	if (true)
+	g_bgm = document.getElementById('bgm');
+	if (OPTIONS.noBGM)
 	{
-		g_bgm = $('bgm');
-		g_bgm.addEventListener('ended', function(){
-			log("replay");
-			this.currentTime = 0;
-			this.play();
-		}, false);
+	  g_bgm.pause();
 	}
 	audio.init(Sounds);
 

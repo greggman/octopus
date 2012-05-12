@@ -105,12 +105,20 @@ canvas {
  height: 100%;
  z-index: 1;
 }
+#qrcode {
+ position: absolute;
+ right: 1em;
+ bottom: 1em;
+ z-index: 21;
+}
 </style>
 <link rel="stylesheet" media="all and (max-device-width: 1024px) and (orientation:portrait)" href="tablet-portrait.css">
 <link rel="stylesheet" media="all and (max-device-width: 1024px) and (orientation:landscape)" href="tablet-landscape.css">
 <link rel="stylesheet" media="all and (max-device-width: 900px) and (orientation:portrait)" href="phone-portrait.css">
 <link rel="stylesheet" media="all and (max-device-width: 900px) and (orientation:landscape)" href="phone-landscape.css">
 <link rel="stylesheet" media="all and (min-device-width: 1025px)" href="monitor.css">
+<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="utils.js"></script>
 <script type="text/javascript" src="image-process.js"></script>
@@ -118,11 +126,12 @@ canvas {
 <script type="text/javascript" src="controller.js"></script>
 </head>
 <body>
+<div id="qrcode"></div>
 <div id="canvasContainer" class="flex-center">
 <canvas id="canvas" width="400" height="400" ></canvas>
 </div>
 <div id="viewContainer" class="flex-center">
-<div class="instructions">Press Any Key or Touch the Screen to Wiggle a Tentacle</div>
+<div class="instructions">Press Any Key or Touch the Screen to Wiggle Your Tentacle</div>
 </div>
 <div id="online">
 <div id="onlinestatus">disconnected</div>

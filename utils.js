@@ -1,9 +1,4 @@
 
-$ = function(id)
-{
-	return document.getElementById(id);
-}
-
 var getURLOptions = function(obj)
 {
 	var s = window.location.href;

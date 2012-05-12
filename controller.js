@@ -28,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-window.onload = main;
+$(document).ready(main);
 
 var g_socket;
 var g_statusElem;
@@ -40,6 +40,7 @@ var g_hue = 0;
 var g_oldHue = 0;
 var g_team = undefined;
 var g_leg = undefined;
+var g_url;
 
 var OPTIONS = {
 };
@@ -56,7 +57,7 @@ function debug(msg) {
 }
 
 function main() {
-  g_canvas = $("canvas");
+  g_canvas = document.getElementById("canvas");
   g_ctx = g_canvas.getContext("2d");
   var images = OctoRender.getImages();
   LoadImages(images, function() {
@@ -152,8 +153,8 @@ function connect() {
     };
     return;
   }
-  $("online").style.display = "block";
-  g_statusElem = $("onlinestatus");
+  document.getElementById("online").style.display = "block";
+  g_statusElem = document.getElementById("onlinestatus");
   var url = "http://" + window.location.host;
   debug("connecting to: " + url);
   g_socket = io.connect(url);
@@ -199,6 +200,14 @@ function processMessage(msg) {
 		g_team = msg.teamId;
 		g_leg  = msg.legId;
 		g_hue  = msg.hue;
+		if (!g_url) {
+		  g_url = msg.url || window.location.href;
+		  //$("#qrcode").qrcode({
+		  //  //width: 64,
+		  //  //height: 64,
+		  //  text: g_url
+		  //});
+		}
 		updateOctopus();
 		break;
   }
