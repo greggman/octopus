@@ -50,7 +50,9 @@ function useOctopiLevel(ii) {
 	var octopi = g_octopiByNumPlayers[ii];
 	var octoNetInfo = octopi.pop();
 	g_octopiByNumPlayers[ii + 1].push(octoNetInfo);
-	octoNetInfo.octo.inactive = false;
+	if (octoNetInfo.octo.inactive) {
+		addToSpawnQueue(octoNetInfo.octo);
+	}
 	if (ii == 0) {
 		++g_numActiveOctopi;
 	}

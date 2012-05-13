@@ -88,7 +88,11 @@ audio = (function() {
         }
     }
 
-  function init(sounds) {
+  function init(sounds, opt_noSound) {
+    if (opt_noSound) {
+      g_can_play = false;
+      return;
+    }
     var a = new Audio()
     g_can_play = a.canPlayType("audio/ogg") || a.canPlayType("audio/mp3");
     if (!g_can_play)

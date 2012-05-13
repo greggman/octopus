@@ -54,8 +54,8 @@ var g_battleCollectables = [
 var g_battleSpawnPoints = [
 { x: 1900, y: 1000, },
 { x: 1200, y: 1200, },
-{ x: 1900, y: 1100, },
-{ x: 1200, y: 1400, },
+{ x: 1900, y: 1500, },
+{ x: 1200, y: 1800, },
 ];
 
 var g_selected = -1;
@@ -76,6 +76,8 @@ var g_obstacles = [];
 var g_collectedItems = [];
 var g_collectibles = [];
 var g_printMsgs = [];
+var g_spawnPointNdx = 0;
+var g_spawnQueue = [];
 var g_gameState = 'title';
 var OPTIONS = {
 	showAll: false,      // show inactive octopi
@@ -116,6 +118,8 @@ var OPTIONS = {
 	collectibleRadius: 40,
 	urchinSpawnRate: .24,
 	collectibleRespawnTime: 10,
+	spawnRadius: 200,
+	spawnTime: 2,
 };
 
 MergeOptions(OPTIONS, OctoRender.getOptions());
@@ -288,11 +292,11 @@ function main()
 	}
 
 	g_bgm = document.getElementById('bgm');
-	if (OPTIONS.noBGM)
+	if (OPTIONS.noBGM || OPTIONS.noSound)
 	{
 	  g_bgm.pause();
 	}
-	audio.init(Sounds);
+	audio.init(Sounds, OPTIONS.noSound);
 
 	for (var ii = 0; ii < g_octopi.length; ++ii)
 	{
@@ -302,6 +306,7 @@ function main()
 		octopus.hasLost = false;
 		octopus.inactive = OPTIONS.battle || OPTIONS.showAll;
 		octopus.respawnTimer = 0;
+		octopus.spawnTimer = 0;
 		octopus.distanceTraveled = 0;
 		octopus.legMovement = [0, 0, 0, 0, 0, 0, 0, 0];
 		octopus.legBackSwing = [false, false, false, false, false, false, false, false];
@@ -796,6 +801,11 @@ function update(elapsedTime, ctx)
 		}
 	}
 
+	if (OPTIONS.battle)
+	{
+		processSpawnPoints(elapsedTime);
+		processSpawnQueue(elapsedTime);
+	}
 
 	ctx.save();
 
@@ -933,6 +943,12 @@ function update(elapsedTime, ctx)
 			ctx.translate(0, octoInfo.y);
 			ctx.translate(octoInfo.x, 0);
 			ctx.rotate(octoInfo.rotation);
+			if (octopus.spawnTimer > 0)
+			{
+				var scale = Math.sin(octopus.spawnTimer / OPTIONS.spawnTime * Math.PI * 0.5 + Math.PI * 0.5);
+				ctx.scale(scale, scale);
+				octopus.spawnTimer -= elapsedTime;
+			}
 
 			drawInfo.hasLost = octopus.hasLost;
 			drawInfo.clock = g_clock + jj;
@@ -1026,6 +1042,14 @@ function update(elapsedTime, ctx)
 			ctx.strokeStyle = "white";
 			ctx.strokeRect(minX, minY, dx, dy);
 			drawCircle(ctx, centerX, centerY, 5, "white");
+
+			for (var ii = 0; ii < g_battleSpawnPoints.length; ++ii)
+			{
+				var spawnPoint = g_battleSpawnPoints[ii];
+				drawCircleLine(
+					ctx, spawnPoint.x, spawnPoint.y, OPTIONS.spawnRadius,
+					spawnPoint.open ? "pink" : "black");
+			}
 		}
 
 		ctx.restore(); // scroll
@@ -1111,6 +1135,64 @@ function MoveTentacle(tipPosX, tipPosY)
 		y: tipPosY - motionForce
 	};
 	return newPos;
+}
+
+function closeCurrentSpawnPoint() {
+  var spawnPoint = g_battleSpawnPoints[g_spawnPointNdx];
+  spawnPoint.open = false;
+  g_spawnPointNdx = (g_spawnPointNdx + 1 + randInt(g_battleSpawnPoints.length - 2)) % g_battleSpawnPoints.length;
+}
+
+function addToSpawnQueue(octopus)
+{
+	if (!octopus.spawning)
+	{
+		octopus.spawning = true;
+		g_spawnQueue.push(octopus);
+	}
+}
+
+function processSpawnQueue(elapsedTime)
+{
+	if (!g_spawnQueue.length)
+	{
+		return;
+	}
+
+	var spawnPoint = g_battleSpawnPoints[g_spawnPointNdx];
+	if (spawnPoint.open)
+	{
+		var octopus = g_spawnQueue.shift();
+		octopus.spawning = false;
+		octopus.inactive = false;
+		octopus.spawnTimer = OPTIONS.spawnTime;
+		octopus.setInfo(spawnPoint.x, spawnPoint.y, 0);
+		closeCurrentSpawnPoint();
+	}
+}
+
+function processSpawnPoints(elapsedTime)
+{
+	var spawnPoint = g_battleSpawnPoints[g_spawnPointNdx];
+	for (var jj = 0; jj < g_octopi.length; ++jj)
+	{
+		var octopus = g_octopi[jj];
+		if (!octopus.hasLost && !octopus.inactive)
+		{
+			var octoInfo = octopus.getInfo();
+			var dx = spawnPoint.x - octoInfo.x;
+			var dy = spawnPoint.y - octoInfo.y;
+			var rad = OPTIONS.octopusRadius + OPTIONS.spawnRadius;
+			var radSq = rad * rad;
+			var distSq = dx * dx + dy * dy;
+			if (distSq < radSq && g_gameState == "play")
+			{
+				closeCurrentSpawnPoint();
+				return;
+			}
+		}
+	}
+	spawnPoint.open = true;
 }
 
 InkSystem = (function(){
