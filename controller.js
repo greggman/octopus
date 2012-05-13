@@ -41,6 +41,7 @@ var g_oldHue = 0;
 var g_team = undefined;
 var g_leg = undefined;
 var g_url;
+var g_okToSend = true;
 
 var OPTIONS = {
 };
@@ -139,11 +140,19 @@ function updateOctopus() {
 }
 
 function press() {
-  debug("press");
-  sendCmd("update", {
-    cmd: 'press',
-    buttonId: 0,
-  });
+  if (g_okToSend) {
+	debug("press");
+	sendCmd("update", {
+	  cmd: 'press',
+	  buttonId: 0,
+	});
+	g_okToSend = false;
+	setTimeout(throttleInput, 500);
+  }
+}
+
+function throttleInput() {
+  g_okToSend = true;
 }
 
 function connect() {

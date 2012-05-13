@@ -281,7 +281,7 @@ Player.prototype.addToOctopus = function()
 Player.prototype.removeFromOctopus = function()
 {
 	var octoNetInfo = this.octoNetInfo;
-	octoNetInfo.freeSlots.push(this.slotId);
+	octoNetInfo.freeSlots.unshift(this.slotId);
 	var ndx = octoNetInfo.players.indexOf(this);
 	octoNetInfo.players.splice(ndx, 1);
 	removePlayerFromOctopus(this.octoNetInfo);
